@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: cybersentinel-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=DEMO ENVIRONMENT
+      - JWT_SECRET=cybersentinel-super-secret-jwt-key-2026
+      - DATABASE_URL=sqlite+aiosqlite:///./cybersentinel.db
+      - SUPABASE_URL=
+      - SUPABASE_ANON_KEY=
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cybersentinel-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
