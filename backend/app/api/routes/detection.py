@@ -23,7 +23,7 @@ async def validate_uploaded_log_file(
     """
     Step 1 & 2: Validates uploaded CSV log file format and extracts detected columns for user feature mapping.
     """
-    if not file.filename.endswith(".csv"):
+    if not file.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unsupported file format. Please upload a valid CSV security log dataset."
@@ -33,17 +33,32 @@ async def validate_uploaded_log_file(
         contents = await file.read()
         df = pd.read_csv(io.BytesIO(contents))
         if df.empty:
-            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+            raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
             
-        columns = list(df.columns)
+        # Normalize column names (strip spaces, lowercase, replace spaces & hyphens with underscores)
+        df.columns = [str(col).strip().lower().replace(" ", "_").replace("-", "_") for col in df.columns]
+        
+        # Clean infinite values and NaNs
+        df = df.replace([float('inf'), float('-inf')], 0).fillna(0)
+        
+        # Convert non-label columns to numeric where possible
+        for col in df.columns:
+            if col != "label":
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
         num_rows = len(df)
-        sample_records = df.head(3).fillna("").to_dict(orient="records")
+        columns = list(df.columns)
+        
+        # Extract records for inference (up to 1,000 rows)
+        records = df.head(1000).to_dict(orient="records")
+        sample_records = df.head(5).to_dict(orient="records")
         
         return {
             "filename": file.filename,
             "num_rows": num_rows,
             "detected_columns": columns,
             "sample_records": sample_records,
+            "parsed_records": records,
             "expected_features": inference_engine.pipeline.feature_columns,
             "message": f"Successfully parsed {num_rows} records with {len(columns)} columns."
         }

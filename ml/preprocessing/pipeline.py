@@ -74,7 +74,11 @@ class PreprocessingPipeline:
             if col not in df.columns:
                 df[col] = 0.0
                 
-        X_num = df[self.feature_columns].fillna(0.0)
+        # Coerce all columns to numeric, replacing text/NaN with 0.0
+        X_num = pd.DataFrame()
+        for col in self.feature_columns:
+            X_num[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
+            
         X_scaled = self.scaler.transform(X_num)
         return X_scaled
 

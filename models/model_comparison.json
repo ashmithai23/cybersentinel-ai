@@ -4,14 +4,14 @@
     "precision": 0.9734,
     "recall": 0.9827,
     "f1_score": 0.9766,
-    "roc_auc": 0.9996,
+    "roc_auc": 0.9998,
     "false_positive_rate": 0.0022,
     "false_negative_rate": 0.125,
     "confusion_matrix": [
       {
         "actual": "Benign",
         "predicted": "Benign",
-        "count": 1139
+        "count": 1068
       },
       {
         "actual": "Benign",
@@ -101,7 +101,7 @@
       {
         "actual": "Brute Force",
         "predicted": "Brute Force",
-        "count": 59
+        "count": 71
       },
       {
         "actual": "Brute Force",
@@ -146,7 +146,7 @@
       {
         "actual": "Denial of Service (DoS)",
         "predicted": "Denial of Service (DoS)",
-        "count": 101
+        "count": 112
       },
       {
         "actual": "Denial of Service (DoS)",
@@ -236,7 +236,7 @@
       {
         "actual": "PortScan",
         "predicted": "PortScan",
-        "count": 73
+        "count": 91
       },
       {
         "actual": "PortScan",
@@ -281,7 +281,7 @@
       {
         "actual": "Web Attack - SQLi",
         "predicted": "Web Attack - SQLi",
-        "count": 41
+        "count": 55
       },
       {
         "actual": "Web Attack - SQLi",
@@ -326,25 +326,25 @@
       {
         "actual": "Web Attack - XSS",
         "predicted": "Web Attack - XSS",
-        "count": 32
+        "count": 48
       }
     ],
     "roc_curve": [],
-    "inference_time_ms": 4.798
+    "inference_time_ms": 6.324
   },
   "1D CNN": {
-    "accuracy": 0.9813,
-    "precision": 0.9816,
-    "recall": 0.9813,
-    "f1_score": 0.9813,
+    "accuracy": 0.98,
+    "precision": 0.9707,
+    "recall": 0.98,
+    "f1_score": 0.9737,
     "roc_auc": 0.9996,
-    "false_positive_rate": 0.0024,
-    "false_negative_rate": 0.1237,
+    "false_positive_rate": 0.0025,
+    "false_negative_rate": 0.125,
     "confusion_matrix": [
       {
         "actual": "Benign",
         "predicted": "Benign",
-        "count": 1139
+        "count": 1068
       },
       {
         "actual": "Benign",
@@ -389,7 +389,7 @@
       {
         "actual": "Botnet",
         "predicted": "Botnet",
-        "count": 13
+        "count": 0
       },
       {
         "actual": "Botnet",
@@ -404,7 +404,7 @@
       {
         "actual": "Botnet",
         "predicted": "Infiltration",
-        "count": 17
+        "count": 30
       },
       {
         "actual": "Botnet",
@@ -434,7 +434,7 @@
       {
         "actual": "Brute Force",
         "predicted": "Brute Force",
-        "count": 59
+        "count": 71
       },
       {
         "actual": "Brute Force",
@@ -479,7 +479,7 @@
       {
         "actual": "Denial of Service (DoS)",
         "predicted": "Denial of Service (DoS)",
-        "count": 101
+        "count": 112
       },
       {
         "actual": "Denial of Service (DoS)",
@@ -509,7 +509,7 @@
       {
         "actual": "Infiltration",
         "predicted": "Botnet",
-        "count": 11
+        "count": 0
       },
       {
         "actual": "Infiltration",
@@ -524,7 +524,7 @@
       {
         "actual": "Infiltration",
         "predicted": "Infiltration",
-        "count": 15
+        "count": 26
       },
       {
         "actual": "Infiltration",
@@ -569,7 +569,7 @@
       {
         "actual": "PortScan",
         "predicted": "PortScan",
-        "count": 73
+        "count": 91
       },
       {
         "actual": "PortScan",
@@ -614,7 +614,7 @@
       {
         "actual": "Web Attack - SQLi",
         "predicted": "Web Attack - SQLi",
-        "count": 41
+        "count": 55
       },
       {
         "actual": "Web Attack - SQLi",
@@ -659,25 +659,25 @@
       {
         "actual": "Web Attack - XSS",
         "predicted": "Web Attack - XSS",
-        "count": 32
+        "count": 48
       }
     ],
     "roc_curve": [],
-    "inference_time_ms": 8.854
+    "inference_time_ms": 11.142
   },
   "LSTM": {
-    "accuracy": 0.978,
-    "precision": 0.9782,
-    "recall": 0.978,
-    "f1_score": 0.978,
-    "roc_auc": 0.9996,
-    "false_positive_rate": 0.0028,
-    "false_negative_rate": 0.1465,
+    "accuracy": 0.9827,
+    "precision": 0.9734,
+    "recall": 0.9827,
+    "f1_score": 0.9766,
+    "roc_auc": 0.9997,
+    "false_positive_rate": 0.0022,
+    "false_negative_rate": 0.125,
     "confusion_matrix": [
       {
         "actual": "Benign",
         "predicted": "Benign",
-        "count": 1139
+        "count": 1068
       },
       {
         "actual": "Benign",
@@ -722,7 +722,7 @@
       {
         "actual": "Botnet",
         "predicted": "Botnet",
-        "count": 11
+        "count": 30
       },
       {
         "actual": "Botnet",
@@ -737,10 +737,343 @@
       {
         "actual": "Botnet",
         "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Brute Force",
+        "count": 71
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Brute Force",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Denial of Service (DoS)",
+        "count": 112
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Denial of Service (DoS)",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Botnet",
+        "count": 26
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Infiltration",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "PortScan",
+        "count": 91
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "PortScan",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Web Attack - SQLi",
+        "count": 55
+      },
+      {
+        "actual": "Web Attack - SQLi",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Web Attack - XSS",
+        "predicted": "Web Attack - XSS",
+        "count": 48
+      }
+    ],
+    "roc_curve": [],
+    "inference_time_ms": 13.465
+  },
+  "Random Forest Baseline": {
+    "accuracy": 0.978,
+    "precision": 0.9766,
+    "recall": 0.978,
+    "f1_score": 0.9768,
+    "roc_auc": 0.9996,
+    "false_positive_rate": 0.0028,
+    "false_negative_rate": 0.1516,
+    "confusion_matrix": [
+      {
+        "actual": "Benign",
+        "predicted": "Benign",
+        "count": 1068
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Botnet",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Infiltration",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "PortScan",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Web Attack - SQLi",
+        "count": 0
+      },
+      {
+        "actual": "Benign",
+        "predicted": "Web Attack - XSS",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Benign",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Botnet",
         "count": 19
       },
       {
         "actual": "Botnet",
+        "predicted": "Brute Force",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Denial of Service (DoS)",
+        "count": 0
+      },
+      {
+        "actual": "Botnet",
+        "predicted": "Infiltration",
+        "count": 11
+      },
+      {
+        "actual": "Botnet",
         "predicted": "PortScan",
         "count": 0
       },
@@ -767,7 +1100,7 @@
       {
         "actual": "Brute Force",
         "predicted": "Brute Force",
-        "count": 59
+        "count": 71
       },
       {
         "actual": "Brute Force",
@@ -812,7 +1145,7 @@
       {
         "actual": "Denial of Service (DoS)",
         "predicted": "Denial of Service (DoS)",
-        "count": 101
+        "count": 112
       },
       {
         "actual": "Denial of Service (DoS)",
@@ -842,7 +1175,7 @@
       {
         "actual": "Infiltration",
         "predicted": "Botnet",
-        "count": 14
+        "count": 22
       },
       {
         "actual": "Infiltration",
@@ -857,7 +1190,7 @@
       {
         "actual": "Infiltration",
         "predicted": "Infiltration",
-        "count": 12
+        "count": 4
       },
       {
         "actual": "Infiltration",
@@ -902,7 +1235,7 @@
       {
         "actual": "PortScan",
         "predicted": "PortScan",
-        "count": 73
+        "count": 91
       },
       {
         "actual": "PortScan",
@@ -947,7 +1280,7 @@
       {
         "actual": "Web Attack - SQLi",
         "predicted": "Web Attack - SQLi",
-        "count": 41
+        "count": 55
       },
       {
         "actual": "Web Attack - SQLi",
@@ -992,343 +1325,10 @@
       {
         "actual": "Web Attack - XSS",
         "predicted": "Web Attack - XSS",
-        "count": 32
+        "count": 48
       }
     ],
     "roc_curve": [],
-    "inference_time_ms": 6.625
-  },
-  "Random Forest Baseline": {
-    "accuracy": 0.9847,
-    "precision": 0.9846,
-    "recall": 0.9847,
-    "f1_score": 0.9845,
-    "roc_auc": 0.9997,
-    "false_positive_rate": 0.002,
-    "false_negative_rate": 0.1048,
-    "confusion_matrix": [
-      {
-        "actual": "Benign",
-        "predicted": "Benign",
-        "count": 1139
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Benign",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Botnet",
-        "count": 21
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Infiltration",
-        "count": 9
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Botnet",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Brute Force",
-        "count": 59
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Brute Force",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Denial of Service (DoS)",
-        "count": 101
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Denial of Service (DoS)",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Botnet",
-        "count": 14
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Infiltration",
-        "count": 12
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Infiltration",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "PortScan",
-        "count": 73
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "PortScan",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Web Attack - SQLi",
-        "count": 41
-      },
-      {
-        "actual": "Web Attack - SQLi",
-        "predicted": "Web Attack - XSS",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Benign",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Botnet",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Brute Force",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Denial of Service (DoS)",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Infiltration",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "PortScan",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Web Attack - SQLi",
-        "count": 0
-      },
-      {
-        "actual": "Web Attack - XSS",
-        "predicted": "Web Attack - XSS",
-        "count": 32
-      }
-    ],
-    "roc_curve": [],
-    "inference_time_ms": 0.18
+    "inference_time_ms": 0.239
   }
 }

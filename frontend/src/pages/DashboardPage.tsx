@@ -175,7 +175,7 @@ export const DashboardPage: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={stats?.attack_category_distribution}
+                  data={stats?.attack_category_distribution || []}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -183,7 +183,7 @@ export const DashboardPage: React.FC = () => {
                   paddingAngle={5}
                   dataKey="count"
                 >
-                  {stats?.attack_category_distribution.map((entry, index) => (
+                  {(stats?.attack_category_distribution || []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -192,7 +192,7 @@ export const DashboardPage: React.FC = () => {
             </ResponsiveContainer>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2 text-[11px]">
-            {stats?.attack_category_distribution.map((item, idx) => (
+            {(stats?.attack_category_distribution || []).map((item, idx) => (
               <div key={item.category} className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                 <span className="text-slate-300 truncate">{item.category} ({item.percentage}%)</span>
@@ -208,7 +208,7 @@ export const DashboardPage: React.FC = () => {
         <div className="glass-card p-5 rounded-xl">
           <h3 className="text-sm font-semibold text-white mb-3">Top Targeted Infrastructure Assets</h3>
           <div className="space-y-3">
-            {stats?.top_affected_endpoints.map((ep) => (
+            {(stats?.top_affected_endpoints || []).map((ep) => (
               <div key={ep.endpoint} className="p-3 bg-[#0B0F17] border border-slate-800 rounded-lg flex justify-between items-center">
                 <div>
                   <div className="text-xs font-mono text-cyan-300 font-semibold">{ep.endpoint}</div>
@@ -230,7 +230,7 @@ export const DashboardPage: React.FC = () => {
         <div className="lg:col-span-2 glass-card p-5 rounded-xl">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-semibold text-white">Recent Security Intelligence Findings</h3>
-            <span className="text-xs text-slate-400">Total 4 Managed Findings</span>
+            <span className="text-xs text-slate-400">Total {(stats?.recent_findings || []).length} Managed Findings</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -245,7 +245,7 @@ export const DashboardPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {stats?.recent_findings.map((finding) => (
+                {(stats?.recent_findings || []).map((finding) => (
                   <tr key={finding.id} className="hover:bg-slate-800/30 transition-all">
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
