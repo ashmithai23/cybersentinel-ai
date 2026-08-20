@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { authService, settingsService } from '../services/api';
 import { SystemStatus, User } from '../types';
+import { LoginPage } from '../pages/LoginPage';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -36,11 +37,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [signedOut, setSignedOut] = useState<boolean>(
+    localStorage.getItem('cybersentinel_signed_out') === 'true' || !localStorage.getItem('cybersentinel_token')
+  );
+
+  const refreshUser = () => {
+    setUser(authService.getCurrentUser());
+    setSignedOut(localStorage.getItem('cybersentinel_signed_out') === 'true' || !localStorage.getItem('cybersentinel_token'));
+  };
 
   useEffect(() => {
-    setUser(authService.getCurrentUser());
+    refreshUser();
     settingsService.getStatus().then(setStatus).catch(() => {});
   }, []);
+
+  const handleLogout = () => {
+    localStorage.setItem('cybersentinel_signed_out', 'true');
+    authService.logout();
+    setUser(null);
+    setSignedOut(true);
+    setShowProfile(false);
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -196,12 +213,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <div className="text-slate-400 text-[11px]">{user?.email}</div>
                   </div>
                   <button
-                    onClick={() => {
-                      authService.logout();
-                      navigate('/');
-                      setShowProfile(false);
-                    }}
-                    className="w-full text-left px-2 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded flex items-center mt-2"
+                    onClick={handleLogout}
+                    className="w-full text-left px-2 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded flex items-center mt-2 cursor-pointer transition-colors"
                   >
                     <LogOut className="w-3.5 h-3.5 mr-2" /> Sign Out
                   </button>
@@ -213,7 +226,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* PAGE CONTENT CONTAINER */}
         <main className="flex-1 overflow-y-auto p-6 bg-[#0B0F17]">
-          {children}
+          {signedOut ? (
+            <LoginPage onLoginSuccess={() => {
+              setSignedOut(false);
+              refreshUser();
+            }} />
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

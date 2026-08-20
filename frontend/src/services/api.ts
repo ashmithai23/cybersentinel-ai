@@ -24,7 +24,9 @@ export const apiClient = axios.create({
 // Interceptor to inject JWT token & auto-login in demo environment if token missing/expired
 apiClient.interceptors.request.use(async (config) => {
   let token: string | null = localStorage.getItem('cybersentinel_token');
-  if (!token) {
+  const isSignedOut = localStorage.getItem('cybersentinel_signed_out') === 'true';
+
+  if (!token && !isSignedOut) {
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/login`, {
         email: 'admin@cybersentinel.ai',
