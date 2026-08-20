@@ -87,7 +87,7 @@ export const AiModelsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-200">
-              {data?.comparison_table.map((row, idx) => (
+              {(data?.comparison_table || []).map((row, idx) => (
                 <tr key={row.model} className="hover:bg-slate-800/40 transition-all">
                   <td className="py-3 font-semibold text-white font-mono">{row.model}</td>
                   <td className="py-3 text-slate-400">{row.type}</td>
@@ -108,7 +108,7 @@ export const AiModelsPage: React.FC = () => {
                     {row.status !== 'Production' && (
                       <button
                         onClick={() => handleSetActive(idx + 1)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded border border-slate-700"
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded border border-slate-700 cursor-pointer"
                       >
                         Set Production
                       </button>
@@ -126,7 +126,7 @@ export const AiModelsPage: React.FC = () => {
         <h3 className="text-sm font-semibold text-white mb-4">F1-Score & Accuracy Comparison Across Model Architectures</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data?.comparison_table}>
+            <BarChart data={data?.comparison_table || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
               <XAxis dataKey="model" stroke="#64748B" fontSize={11} />
               <YAxis domain={[0.9, 1.0]} stroke="#64748B" fontSize={11} />

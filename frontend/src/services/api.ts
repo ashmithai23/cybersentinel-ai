@@ -177,6 +177,19 @@ export const reportsService = {
     const res = await apiClient.post('/reports/generate', { title, format });
     return res.data;
   },
+  downloadReport: async (reportId: number, filename: string) => {
+    const res = await apiClient.get(`/reports/${reportId}/download`, {
+      responseType: 'blob'
+    });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
   getDownloadUrl: (reportId: number) => `/api/v1/reports/${reportId}/download`
 };
 

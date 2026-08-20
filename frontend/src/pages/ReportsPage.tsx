@@ -113,13 +113,12 @@ export const ReportsPage: React.FC = () => {
                   <td className="py-3 text-slate-400">{rep.generated_by}</td>
                   <td className="py-3 text-slate-500">{rep.created_at ? new Date(rep.created_at).toLocaleString() : 'Just now'}</td>
                   <td className="py-3">
-                    <a
-                      href={reportsService.getDownloadUrl(rep.id)}
-                      download
-                      className="px-3 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded font-semibold inline-flex items-center"
+                    <button
+                      onClick={() => reportsService.downloadReport(rep.id, `${rep.report_uuid}.${rep.format.toLowerCase()}`)}
+                      className="px-3 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded font-semibold inline-flex items-center cursor-pointer transition-colors"
                     >
-                      <Download className="w-3.5 h-3.5 mr-1" /> Download
-                    </a>
+                      <Download className="w-3.5 h-3.5 mr-1" /> Download {rep.format}
+                    </button>
                   </td>
                 </tr>
               ))}
