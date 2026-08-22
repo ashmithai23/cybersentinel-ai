@@ -268,20 +268,13 @@ export const ThreatDetectionPage: React.FC = () => {
               className="hidden"
               id="log-file-input"
             />
-            <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="mt-4 flex items-center justify-center">
               <label
                 htmlFor="log-file-input"
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-semibold rounded-lg cursor-pointer border border-slate-700"
+                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-lg cursor-pointer transition-all shadow-lg shadow-cyan-950/50 flex items-center gap-2"
               >
-                Browse CSV Files
+                <UploadCloud className="w-4 h-4" /> Select & Upload Your CSV File
               </label>
-              <button
-                type="button"
-                onClick={handleUseSampleDataset}
-                className="px-4 py-2 bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-400 text-xs font-semibold rounded-lg border border-cyan-800/50"
-              >
-                Use Pre-Packaged Sample Dataset
-              </button>
             </div>
           </div>
 
