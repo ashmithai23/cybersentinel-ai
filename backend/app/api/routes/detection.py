@@ -93,6 +93,71 @@ async def analyze_batch_security_events(
         medium_count = sum(1 for r in results if r["severity"] == "Medium")
         low_count = sum(1 for r in results if r["severity"] == "Low")
 
+        # Auto-persist events, predictions & findings to sync all platform modules!
+        import uuid
+        from backend.app.database.models import SecurityEvent, Prediction, Finding
+        
+        for r in results:
+            event_uuid = f"EVT-{uuid.uuid4().hex[:12].upper()}"
+            raw = r.get("raw_attributes", {})
+            
+            src_ip = str(raw.get("source_ip", raw.get("src_ip", "192.168.1.125")))
+            dst_ip = str(raw.get("dest_ip", raw.get("dst_ip", "192.168.1.10")))
+            try:
+                dst_port = int(raw.get("destination_port", raw.get("dest_port", 80)))
+            except (ValueError, TypeError):
+                dst_port = 80
+            proto = str(raw.get("protocol", "TCP")).upper()
+            try:
+                bytes_cnt = int(raw.get("bytes_transferred", raw.get("total_length_of_fwd_packets", 1024)))
+            except (ValueError, TypeError):
+                bytes_cnt = 1024
+            
+            sec_event = SecurityEvent(
+                event_uuid=event_uuid,
+                source_ip=src_ip,
+                dest_ip=dst_ip,
+                dest_port=dst_port,
+                protocol=proto,
+                flow_duration=float(raw.get("flow_duration", 120.0)),
+                packet_count=int(raw.get("total_fwd_packets", 10)),
+                bytes_count=bytes_cnt,
+                raw_payload=raw
+            )
+            db.add(sec_event)
+            
+            pred = Prediction(
+                event_uuid=event_uuid,
+                model_name=request.model_name or "ANN / MLP",
+                prediction_label=r["prediction"],
+                confidence=r["confidence"],
+                risk_score=r["risk_score"],
+                severity=r["severity"],
+                top_features={"features": r["top_features"]},
+                explanation=r["explanation"]
+            )
+            db.add(pred)
+            
+            if r["prediction"] != "Benign":
+                finding_code = f"VULN-{uuid.uuid4().hex[:8].upper()}"
+                finding = Finding(
+                    finding_code=finding_code,
+                    title=f"AI Alert: {r['prediction']} Activity Detected from {src_ip}",
+                    category=r["prediction"],
+                    severity=r["severity"],
+                    confidence=r["confidence"],
+                    affected_asset=request.asset_endpoint or dst_ip,
+                    description=r["explanation"],
+                    evidence=raw,
+                    potential_impact=f"Potential unauthorized exploitation or denial of service attack vector targeting {dst_ip}.",
+                    recommendation=f"Inspect firewall logs for source IP {src_ip} and apply traffic throttling rules.",
+                    remediation=f"Block inbound traffic from source IP {src_ip} and review security policies.",
+                    status="New"
+                )
+                db.add(finding)
+                
+        await db.commit()
+
         await log_audit_event(
             db=db,
             user_email=payload.email,
@@ -113,4 +178,5 @@ async def analyze_batch_security_events(
             results=results
         )
     except Exception as e:
+        await db.rollback()
         raise HTTPException(status_code=500, detail=f"Threat Detection Engine failure: {str(e)}")

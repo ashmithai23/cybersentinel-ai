@@ -34,15 +34,25 @@ async def get_dashboard_overview(db: AsyncSession = Depends(get_db)):
         {"time": "21:00", "benign": 1800, "threats": 64}
     ]
     
-    # Attack category distribution
-    attack_category_dist = [
-        {"category": "Denial of Service (DoS)", "count": 482, "percentage": 37.5},
-        {"category": "PortScan", "count": 310, "percentage": 24.1},
-        {"category": "Brute Force", "count": 215, "percentage": 16.7},
-        {"category": "Web Attack - SQLi", "count": 140, "percentage": 10.9},
-        {"category": "Web Attack - XSS", "count": 82, "percentage": 6.4},
-        {"category": "Botnet", "count": 55, "percentage": 4.4}
-    ]
+    # Attack category distribution (Dynamic calculation from uploaded findings if present)
+    if findings:
+        cat_counts = {}
+        for f in findings:
+            cat_counts[f.category] = cat_counts.get(f.category, 0) + 1
+        total_cat = sum(cat_counts.values()) or 1
+        attack_category_dist = [
+            {"category": k, "count": v, "percentage": round((v / total_cat) * 100, 1)}
+            for k, v in cat_counts.items()
+        ]
+    else:
+        attack_category_dist = [
+            {"category": "Denial of Service (DoS)", "count": 482, "percentage": 37.5},
+            {"category": "PortScan", "count": 310, "percentage": 24.1},
+            {"category": "Brute Force", "count": 215, "percentage": 16.7},
+            {"category": "Web Attack - SQLi", "count": 140, "percentage": 10.9},
+            {"category": "Web Attack - XSS", "count": 82, "percentage": 6.4},
+            {"category": "Botnet", "count": 55, "percentage": 4.4}
+        ]
     
     # Severity distribution
     severity_dist = [
