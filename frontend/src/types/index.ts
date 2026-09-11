@@ -121,6 +121,7 @@ export interface ApiSecurityAnalysis {
     method: string;
     requests: number;
     anomalies: number;
+    status_breakdown?: Record<string, number>;
   }>;
   recent_payload_anomalies: Array<{
     id: string;

@@ -19,15 +19,13 @@ class TokenResponse(BaseModel):
     user: Dict[str, Any]
 
 class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     email: str
     full_name: str
     role: str
     is_active: bool
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 # --- DASHBOARD SCHEMAS ---
 class MetricCard(BaseModel):
@@ -111,6 +109,7 @@ class FindingNoteCreate(BaseModel):
     text: str
 
 class FindingOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     finding_code: str
     title: str
@@ -128,9 +127,6 @@ class FindingOut(BaseModel):
     notes: Optional[List[Dict[str, Any]]] = []
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 # --- MODEL MONITORING SCHEMAS ---
 class ModelVersionOut(BaseModel):
@@ -182,6 +178,7 @@ class ReportCreateRequest(BaseModel):
     format: str = "PDF" # PDF, JSON, CSV
 
 class ReportOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     report_uuid: str
     title: str
@@ -194,11 +191,9 @@ class ReportOut(BaseModel):
     high_count: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 # --- AUDIT LOG SCHEMAS ---
 class AuditLogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     user_email: str
     action: str
@@ -207,9 +202,6 @@ class AuditLogOut(BaseModel):
     ip_address: Optional[str] = None
     details: Optional[Dict[str, Any]] = None
     timestamp: datetime
-
-    class Config:
-        from_attributes = True
 
 # --- SYSTEM & INTERVIEW MODE INFO ---
 class SystemInfoOut(BaseModel):

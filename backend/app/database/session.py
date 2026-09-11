@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from backend.app.core.config import settings
@@ -64,8 +65,6 @@ async def init_db():
                 is_active=True
             )
             session.add_all([demo_admin, demo_analyst, demo_viewer])
-            
-            session.add_all([demo_admin, demo_analyst, demo_viewer])
 
             # Seed model version metadata
             m1 = ModelVersion(
@@ -118,6 +117,73 @@ async def init_db():
             )
             session.add_all([m1, m2, m3, m4])
             
+            # Seed Initial Findings for SOC Analyst Workflows
+            f1 = Finding(
+                finding_code="FIND-2026-001",
+                title="Critical SQL Injection Attempt Detected",
+                category="Web Attack - SQL Injection",
+                severity="Critical",
+                confidence=98.5,
+                affected_asset="/api/v1/auth/login",
+                description="Multiple SQL injection payloads detected in User-Agent and HTTP query parameters attempting database schema extraction.",
+                evidence={"payload": "UNION SELECT 1, @@version, user() --", "source_ip": "198.51.100.45"},
+                potential_impact="Unauthorized database read access, credential exfiltration, or administrative authentication bypass.",
+                recommendation="Enforce parametrized SQL queries, strict input validation, and Web Application Firewall (WAF) rule blocking.",
+                remediation="Upgrade database access layer to Async SQLAlchemy ORM parameters and apply rate-limiting middleware.",
+                status="New",
+                assigned_analyst="admin@cybersentinel.ai",
+                notes=[{"author": "system@cybersentinel.ai", "text": "Flagged automatically by CyberSentinel ANN Deep Learning Engine."}]
+            )
+            f2 = Finding(
+                finding_code="FIND-2026-002",
+                title="Volumetric DDoS Flood Traffic Detected",
+                category="DDoS",
+                severity="Critical",
+                confidence=99.2,
+                affected_asset="/api/v1/gateway",
+                description="High packet flow velocity exceeding 35,000 packets/sec observed from distributed source IPs targeting main API gateway.",
+                evidence={"packet_rate": 35400, "protocol": "TCP SYN"},
+                potential_impact="Service disruption, resource exhaustion, and HTTP 503 gateway timeouts for legitimate users.",
+                recommendation="Enable adaptive rate limiting, IP throttling, and upstream BGP DDoS scrubbing.",
+                remediation="Apply rate limiting rules in FastAPI middleware and Cloudflare proxy rules.",
+                status="Under Review",
+                assigned_analyst="analyst@cybersentinel.ai",
+                notes=[{"author": "system@cybersentinel.ai", "text": "Automated alert triggered by packet frequency anomaly threshold."}]
+            )
+            f3 = Finding(
+                finding_code="FIND-2026-003",
+                title="High Frequency Port Scanning Activity",
+                category="PortScan",
+                severity="High",
+                confidence=96.8,
+                affected_asset="192.168.1.105 (Internal Subnet)",
+                description="Sequential TCP SYN probes detected across ports 1-1024 originating from an external untrusted host.",
+                evidence={"probed_ports": [21, 22, 80, 443, 3306, 8080], "scanner": "Nmap 7.94"},
+                potential_impact="Reconnaissance identifying exposed internal microservices and vulnerable listening ports.",
+                recommendation="Block scanning source IP at peripheral firewall and close unused listening ports.",
+                remediation="Update iptables firewall rules to drop SYN probe sweeps automatically.",
+                status="Confirmed",
+                assigned_analyst="analyst@cybersentinel.ai",
+                notes=[{"author": "analyst@cybersentinel.ai", "text": "Confirmed active scanner; source IP added to blocklist."}]
+            )
+            f4 = Finding(
+                finding_code="FIND-2026-004",
+                title="Botnet Command & Control Keepalive Signals",
+                category="Bot",
+                severity="High",
+                confidence=94.3,
+                affected_asset="10.0.4.12 (Database Host)",
+                description="Periodic outbound beaconing traffic with suspicious payload signatures detected towards external C2 servers.",
+                evidence={"beacon_interval": "60s", "dest_ip": "203.0.113.88"},
+                potential_impact="Potential host compromise, malware beaconing, or data exfiltration channel.",
+                recommendation="Isolate database host from internal subnet and perform incident response forensic scan.",
+                remediation="Quarantine host 10.0.4.12, rotate database credentials, and revoke active JWT tokens.",
+                status="New",
+                assigned_analyst="admin@cybersentinel.ai",
+                notes=[{"author": "system@cybersentinel.ai", "text": "Detected by CyberSentinel LSTM Sequence Threat Model."}]
+            )
+            session.add_all([f1, f2, f3, f4])
+            
             # Initial Audit Log entry
             audit = AuditLog(
                 user_email="system@cybersentinel.ai",
@@ -125,7 +191,7 @@ async def init_db():
                 resource="DATABASE",
                 result="SUCCESS",
                 ip_address="127.0.0.1",
-                details={"message": "CyberSentinel AI database initialized with default security roles and defensive models."}
+                details={"message": "CyberSentinel AI database initialized with default security roles, defensive models, and initial findings."}
             )
             session.add(audit)
             

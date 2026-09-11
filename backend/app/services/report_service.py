@@ -2,7 +2,7 @@ import os
 import uuid
 import json
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -36,7 +36,7 @@ class ReportGeneratorService:
         low_count = sum(1 for f in findings if f.severity == "Low")
         
         report_uuid = f"REP-{uuid.uuid4().hex[:8].upper()}"
-        now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         
         exec_summary = (
             f"CyberSentinel AI conducted an AI-assisted defensive security assessment on {now_str}. "

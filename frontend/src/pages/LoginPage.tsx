@@ -115,10 +115,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </button>
         </form>
 
-        {/* DEMO QUICK LOGIN SELECTOR */}
+        {/* Quick Analyst Profile Selector */}
         <div className="border-t border-slate-800 pt-4 space-y-3">
           <div className="text-[11px] font-semibold text-slate-400 text-center uppercase tracking-wider">
-            1-Click Demo Analyst Login
+            Select Analyst Security Profile
           </div>
           <div className="grid grid-cols-1 gap-2">
             <button

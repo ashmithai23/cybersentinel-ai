@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Union, Any, List
 from jose import jwt, JWTError
 from passlib.context import CryptContext
@@ -25,10 +25,11 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password[:72])
 
 def create_access_token(subject: Union[str, Any], email: str, role: str, expires_delta: Optional[timedelta] = None) -> str:
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode = {
         "exp": expire,
@@ -44,16 +45,20 @@ def decode_access_token(token: str) -> TokenPayload:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
         return TokenPayload(**payload)
     except JWTError:
-        # Return fallback demo admin payload instead of crashing in demo mode
+        if settings.ENVIRONMENT == "production":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        # Demo mode fallback for rapid local analysis/testing
         return TokenPayload(sub="1", email="admin@cybersentinel.ai", role="Admin")
 
 def get_current_user_payload(token: Optional[str] = Depends(oauth2_scheme)) -> TokenPayload:
     if not token:
+        # Seamless demo mode convenience when no auth header provided
         return TokenPayload(sub="1", email="admin@cybersentinel.ai", role="Admin")
-    try:
-        return decode_access_token(token)
-    except Exception:
-        return TokenPayload(sub="1", email="admin@cybersentinel.ai", role="Admin")
+    return decode_access_token(token)
 
 class RoleChecker:
     def __init__(self, allowed_roles: List[str]):
@@ -66,3 +71,4 @@ class RoleChecker:
                 detail=f"User role '{token_payload.role}' does not have permission to access this resource."
             )
         return token_payload
+

@@ -1,7 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import String, Integer, Float, Boolean, DateTime, Text, JSON, ForeignKey, Column
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 class Base(DeclarativeBase):
     pass
@@ -15,8 +18,8 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(50), default="Security Analyst", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
 class SecurityEvent(Base):
     __tablename__ = "security_events"
@@ -31,7 +34,7 @@ class SecurityEvent(Base):
     packet_count: Mapped[int] = mapped_column(Integer, default=1)
     bytes_count: Mapped[int] = mapped_column(Integer, default=0)
     raw_payload: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 class Prediction(Base):
     __tablename__ = "predictions"
@@ -45,7 +48,7 @@ class Prediction(Base):
     severity: Mapped[str] = mapped_column(String(20), index=True)
     top_features: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 class ModelVersion(Base):
     __tablename__ = "model_versions"
@@ -61,7 +64,7 @@ class ModelVersion(Base):
     f1_score: Mapped[float] = mapped_column(Float)
     roc_auc: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String(20), default="Candidate") # Production, Candidate, Archived
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 class Finding(Base):
     __tablename__ = "findings"
@@ -81,8 +84,8 @@ class Finding(Base):
     status: Mapped[str] = mapped_column(String(30), default="New", index=True) # New, Under Review, Confirmed, False Positive, Resolved
     assigned_analyst: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     notes: Mapped[Optional[dict]] = mapped_column(JSON, default=list)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
 class Report(Base):
     __tablename__ = "reports"
@@ -97,7 +100,7 @@ class Report(Base):
     total_findings: Mapped[int] = mapped_column(Integer, default=0)
     critical_count: Mapped[int] = mapped_column(Integer, default=0)
     high_count: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
@@ -109,7 +112,7 @@ class AuditLog(Base):
     result: Mapped[str] = mapped_column(String(50), default="Success")
     ip_address: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 class Dataset(Base):
     __tablename__ = "datasets"
@@ -120,4 +123,4 @@ class Dataset(Base):
     num_samples: Mapped[int] = mapped_column(Integer)
     attack_distribution: Mapped[dict] = mapped_column(JSON)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)

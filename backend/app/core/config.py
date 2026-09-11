@@ -1,14 +1,16 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(case_sensitive=True)
+    
     PROJECT_NAME: str = "CYBERSENTINEL AI"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
     # Security
-    JWT_SECRET: str = "cybersentinel-super-secret-jwt-key-change-in-production-2026"
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "cybersentinel-enterprise-production-jwt-key-2026")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
@@ -32,10 +34,8 @@ class Settings(BaseSettings):
     DATA_DIR: str = os.getenv("DATA_DIR", "data")
     
     # Environment Mode
-    IS_DEMO_MODE: bool = True
-    ENVIRONMENT: str = "DEMO ENVIRONMENT"
-
-    class Config:
-        case_sensitive = True
+    IS_DEMO_MODE: bool = False
+    ENVIRONMENT: str = "PRODUCTION"
 
 settings = Settings()
+

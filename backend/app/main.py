@@ -19,7 +19,8 @@ from backend.app.api.routes import (
     reports,
     audit,
     info,
-    settings as settings_router
+    settings as settings_router,
+    websocket
 )
 
 @asynccontextmanager
@@ -73,6 +74,7 @@ app.include_router(reports.router, prefix=api_prefix)
 app.include_router(audit.router, prefix=api_prefix)
 app.include_router(info.router, prefix=api_prefix)
 app.include_router(settings_router.router, prefix=api_prefix)
+app.include_router(websocket.router, prefix=api_prefix)
 
 @app.get("/")
 async def root():

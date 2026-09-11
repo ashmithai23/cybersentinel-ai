@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.orm.attributes import flag_modified
 from typing import List, Optional, Dict, Any
 
 from backend.app.database.session import get_db
@@ -75,12 +76,13 @@ async def update_finding_status(
     if status_update.assigned_analyst:
         finding.assigned_analyst = status_update.assigned_analyst
         
-    notes = finding.notes or []
+    notes = list(finding.notes or [])
     notes.append({
         "author": payload.email,
         "text": f"Status updated from '{old_status}' to '{finding.status}'."
     })
     finding.notes = notes
+    flag_modified(finding, "notes")
     
     await db.commit()
     await db.refresh(finding)
@@ -103,14 +105,16 @@ async def add_finding_note(
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found.")
         
-    notes = finding.notes or []
+    notes = list(finding.notes or [])
     notes.append({
         "author": payload.email,
         "text": note_in.text
     })
     finding.notes = notes
+    flag_modified(finding, "notes")
     await db.commit()
     await db.refresh(finding)
     
     await log_audit_event(db, payload.email, "ADD_FINDING_NOTE", f"FINDING_{finding.finding_code}")
     return finding
+
