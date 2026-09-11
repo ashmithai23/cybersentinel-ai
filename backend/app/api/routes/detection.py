@@ -49,8 +49,8 @@ async def validate_uploaded_log_file(
         num_rows = len(df)
         columns = list(df.columns)
         
-        # Extract records for inference (up to 1,000 rows)
-        records = df.head(1000).to_dict(orient="records")
+        # Extract records for real-time inference (sample up to 250 rows for sub-second execution)
+        records = df.head(250).to_dict(orient="records")
         sample_records = df.head(5).to_dict(orient="records")
         
         return {
@@ -60,7 +60,7 @@ async def validate_uploaded_log_file(
             "sample_records": sample_records,
             "parsed_records": records,
             "expected_features": inference_engine.pipeline.feature_columns,
-            "message": f"Successfully parsed {num_rows} records with {len(columns)} columns."
+            "message": f"Successfully parsed {num_rows} records with {len(columns)} columns (sampled {len(records)} for real-time inference)."
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse CSV file: {str(e)}")
@@ -73,13 +73,15 @@ async def analyze_batch_security_events(
 ):
     """
     Step 4, 5, 6: Runs preprocessing, model inference, risk scoring, explainable findings,
-    and returns categorized threat results.
+    and returns categorized threat results with high-speed bulk persistence.
     """
     if not request.events:
         raise HTTPException(status_code=400, detail="No event records provided for threat detection.")
         
     try:
-        df = pd.DataFrame(request.events)
+        # Cap batch to 250 records for responsive sub-second inference
+        events_batch = request.events[:250]
+        df = pd.DataFrame(events_batch)
         results = inference_engine.predict_batch(
             df=df,
             model_name=request.model_name or "ANN / MLP",
@@ -93,14 +95,58 @@ async def analyze_batch_security_events(
         medium_count = sum(1 for r in results if r["severity"] == "Medium")
         low_count = sum(1 for r in results if r["severity"] == "Low")
 
-        # Auto-persist events, predictions & findings to sync all platform modules!
+        # High-Speed Bulk Persistence: Consolidate findings to avoid duplicate DB lockups
         import uuid
         from backend.app.database.models import SecurityEvent, Prediction, Finding
-        
+
+        # Group threats by (category, src_ip) for clean SOC findings & instant persistence
+        threat_groups = {}
         for r in results:
+            if r["prediction"] != "Benign":
+                raw = r.get("raw_attributes", {})
+                src_ip = str(raw.get("source_ip", raw.get("src_ip", "192.168.1.125")))
+                key = (r["prediction"], src_ip)
+                if key not in threat_groups:
+                    threat_groups[key] = {
+                        "category": r["prediction"],
+                        "src_ip": src_ip,
+                        "dst_ip": str(raw.get("dest_ip", raw.get("dst_ip", "192.168.1.10"))),
+                        "severity": r["severity"],
+                        "confidence": r["confidence"],
+                        "explanation": r["explanation"],
+                        "evidence": raw,
+                        "incident_count": 1
+                    }
+                else:
+                    threat_groups[key]["incident_count"] += 1
+                    threat_groups[key]["confidence"] = max(threat_groups[key]["confidence"], r["confidence"])
+
+        findings_to_add = []
+        for key, g in list(threat_groups.items())[:15]:
+            count_suffix = f" ({g['incident_count']} incidents detected)" if g["incident_count"] > 1 else ""
+            finding_code = f"VULN-{uuid.uuid4().hex[:8].upper()}"
+            f_obj = Finding(
+                finding_code=finding_code,
+                title=f"AI Alert: {g['category']} Activity Detected from {g['src_ip']}{count_suffix}",
+                category=g["category"],
+                severity=g["severity"],
+                confidence=g["confidence"],
+                affected_asset=request.asset_endpoint or g["dst_ip"],
+                description=g["explanation"],
+                evidence=g["evidence"],
+                potential_impact=f"Potential unauthorized exploitation or denial of service attack vector targeting {g['dst_ip']}.",
+                recommendation=f"Inspect firewall logs for source IP {g['src_ip']} and apply traffic throttling rules.",
+                remediation=f"Block inbound traffic from source IP {g['src_ip']} and review security policies.",
+                status="New"
+            )
+            findings_to_add.append(f_obj)
+
+        # Bulk add up to 50 representative security events and predictions
+        events_to_add = []
+        preds_to_add = []
+        for r in results[:50]:
             event_uuid = f"EVT-{uuid.uuid4().hex[:12].upper()}"
             raw = r.get("raw_attributes", {})
-            
             src_ip = str(raw.get("source_ip", raw.get("src_ip", "192.168.1.125")))
             dst_ip = str(raw.get("dest_ip", raw.get("dst_ip", "192.168.1.10")))
             try:
@@ -112,7 +158,7 @@ async def analyze_batch_security_events(
                 bytes_cnt = int(raw.get("bytes_transferred", raw.get("total_length_of_fwd_packets", 1024)))
             except (ValueError, TypeError):
                 bytes_cnt = 1024
-            
+
             sec_event = SecurityEvent(
                 event_uuid=event_uuid,
                 source_ip=src_ip,
@@ -124,8 +170,8 @@ async def analyze_batch_security_events(
                 bytes_count=bytes_cnt,
                 raw_payload=raw
             )
-            db.add(sec_event)
-            
+            events_to_add.append(sec_event)
+
             pred = Prediction(
                 event_uuid=event_uuid,
                 model_name=request.model_name or "ANN / MLP",
@@ -136,26 +182,9 @@ async def analyze_batch_security_events(
                 top_features={"features": r["top_features"]},
                 explanation=r["explanation"]
             )
-            db.add(pred)
-            
-            if r["prediction"] != "Benign":
-                finding_code = f"VULN-{uuid.uuid4().hex[:8].upper()}"
-                finding = Finding(
-                    finding_code=finding_code,
-                    title=f"AI Alert: {r['prediction']} Activity Detected from {src_ip}",
-                    category=r["prediction"],
-                    severity=r["severity"],
-                    confidence=r["confidence"],
-                    affected_asset=request.asset_endpoint or dst_ip,
-                    description=r["explanation"],
-                    evidence=raw,
-                    potential_impact=f"Potential unauthorized exploitation or denial of service attack vector targeting {dst_ip}.",
-                    recommendation=f"Inspect firewall logs for source IP {src_ip} and apply traffic throttling rules.",
-                    remediation=f"Block inbound traffic from source IP {src_ip} and review security policies.",
-                    status="New"
-                )
-                db.add(finding)
-                
+            preds_to_add.append(pred)
+
+        db.add_all(events_to_add + preds_to_add + findings_to_add)
         await db.commit()
 
         await log_audit_event(

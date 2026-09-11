@@ -13,105 +13,42 @@ import {
   ArrowRight,
   Eye,
   RefreshCw,
-  Radar
+  Radar,
+  RotateCcw,
+  Sliders,
+  FileText
 } from 'lucide-react';
-import { detectionService } from '../services/api';
-import { BatchDetectionResponse, PredictionResult } from '../types';
+import { useDetection } from '../context/DetectionContext';
+import { PredictionResult } from '../types';
 
 export const ThreatDetectionPage: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [file, setFile] = useState<File | null>(null);
-  const [validationData, setValidationData] = useState<any>(null);
-  const [selectedModel, setSelectedModel] = useState<string>('ANN / MLP');
-  const [selectedAsset, setSelectedAsset] = useState<string>('/api/v1/network');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [detectionResults, setDetectionResults] = useState<BatchDetectionResponse | null>(null);
-  const [selectedResult, setSelectedResult] = useState<PredictionResult | null>(null);
-
-  // Filters
-  const [filterSeverity, setFilterSeverity] = useState<string>('ALL');
-  const [filterPrediction, setFilterPrediction] = useState<string>('ALL');
+  const {
+    currentStep,
+    setCurrentStep,
+    fileName,
+    fileSize,
+    validationData,
+    selectedModel,
+    setSelectedModel,
+    selectedAsset,
+    setSelectedAsset,
+    loading,
+    progressPercent,
+    loadingMessage,
+    detectionResults,
+    selectedResult,
+    setSelectedResult,
+    filterSeverity,
+    setFilterSeverity,
+    filterPrediction,
+    setFilterPrediction,
+    processFile,
+    runInference,
+    useSampleDataset,
+    resetPipeline
+  } = useDetection();
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
-
-  const parseCsvOnClient = (fileContent: string) => {
-    const lines = fileContent.split(/\r?\n/).filter(line => line.trim().length > 0);
-    if (lines.length === 0) return { columns: [], records: [] };
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase().replace(/\s+|-/g, '_'));
-    const records: Record<string, any>[] = [];
-    
-    for (let i = 1; i < Math.min(lines.length, 1001); i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-      if (values.length === headers.length) {
-        const rowObj: Record<string, any> = {};
-        headers.forEach((h, idx) => {
-          const val = values[idx];
-          const numVal = Number(val);
-          rowObj[h] = isNaN(numVal) ? val : numVal;
-        });
-        records.push(rowObj);
-      }
-    }
-    return { columns: headers, records };
-  };
-
-  const processFile = async (selectedFile: File) => {
-    setFile(selectedFile);
-    setLoading(true);
-    try {
-      const res = await detectionService.validateLogFile(selectedFile);
-      setValidationData(res);
-      setCurrentStep(2);
-    } catch (err: any) {
-      console.warn('Backend validation notice, switching to instant client-side CSV parser:', err);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        if (text) {
-          const { columns, records } = parseCsvOnClient(text);
-          if (records.length > 0) {
-            setValidationData({
-              filename: selectedFile.name,
-              num_rows: records.length,
-              detected_columns: columns,
-              sample_records: records.slice(0, 5),
-              parsed_records: records,
-              message: `Successfully parsed ${records.length} records.`
-            });
-            setCurrentStep(2);
-          } else {
-            alert('Could not parse valid records from CSV file. Please check file format.');
-          }
-        }
-      };
-      reader.readAsText(selectedFile);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUseSampleDataset = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const sampleRecords = [
-        { destination_port: 80, flow_duration: 120, total_fwd_packets: 4500, total_backward_packets: 2, total_length_of_fwd_packets: 450000, total_length_of_bwd_packets: 80, fwd_packet_length_max: 100, fwd_packet_length_min: 40, fwd_packet_length_mean: 60, bwd_packet_length_mean: 40, flow_bytes_s: 15000000, flow_packets_s: 35000, flow_iat_mean: 0.1, fwd_iat_mean: 0.1, bwd_iat_mean: 0, fwd_header_length: 90000, bwd_header_length: 40, fwd_packets_s: 35000, bwd_packets_s: 0, min_packet_length: 40, max_packet_length: 100, packet_length_mean: 60, packet_length_std: 10, syn_flag_count: 1, rst_flag_count: 1, psh_flag_count: 0, ack_flag_count: 0, urg_flag_count: 0, down_up_ratio: 0.0, average_packet_size: 60, active_mean: 0, idle_mean: 0 },
-        { destination_port: 443, flow_duration: 1250, total_fwd_packets: 14, total_backward_packets: 10, total_length_of_fwd_packets: 1800, total_length_of_bwd_packets: 500, fwd_packet_length_max: 1800, fwd_packet_length_min: 100, fwd_packet_length_mean: 1800, bwd_packet_length_mean: 500, flow_bytes_s: 100000, flow_packets_s: 20, flow_iat_mean: 100, fwd_iat_mean: 100, bwd_iat_mean: 100, fwd_header_length: 280, bwd_header_length: 200, fwd_packets_s: 10, bwd_packets_s: 10, min_packet_length: 60, max_packet_length: 1800, packet_length_mean: 1150, packet_length_std: 300, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 1, ack_flag_count: 1, urg_flag_count: 0, down_up_ratio: 1.0, average_packet_size: 1150, active_mean: 50, idle_mean: 200 },
-        { destination_port: 22, flow_duration: 8500, total_fwd_packets: 120, total_backward_packets: 120, total_length_of_fwd_packets: 18000, total_length_of_bwd_packets: 14400, fwd_packet_length_max: 250, fwd_packet_length_min: 40, fwd_packet_length_mean: 150, bwd_packet_length_mean: 120, flow_bytes_s: 80000, flow_packets_s: 80, flow_iat_mean: 20, fwd_iat_mean: 20, bwd_iat_mean: 20, fwd_header_length: 2400, bwd_header_length: 2400, fwd_packets_s: 40, bwd_packets_s: 40, min_packet_length: 40, max_packet_length: 250, packet_length_mean: 135, packet_length_std: 30, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 1, ack_flag_count: 1, urg_flag_count: 0, down_up_ratio: 1.0, average_packet_size: 135, active_mean: 20, idle_mean: 100 },
-        { destination_port: 8080, flow_duration: 12, total_fwd_packets: 1, total_backward_packets: 0, total_length_of_fwd_packets: 0, total_length_of_bwd_packets: 0, fwd_packet_length_max: 0, fwd_packet_length_min: 0, fwd_packet_length_mean: 0, bwd_packet_length_mean: 0, flow_bytes_s: 0, flow_packets_s: 500, flow_iat_mean: 5, fwd_iat_mean: 0, bwd_iat_mean: 0, fwd_header_length: 20, bwd_header_length: 0, fwd_packets_s: 500, bwd_packets_s: 0, min_packet_length: 0, max_packet_length: 0, packet_length_mean: 0, packet_length_std: 0, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 0, ack_flag_count: 0, urg_flag_count: 0, down_up_ratio: 0.0, average_packet_size: 0, active_mean: 0, idle_mean: 0 }
-      ];
-      setValidationData({
-        filename: 'cicids_sample_traffic.csv',
-        num_rows: sampleRecords.length,
-        detected_columns: Object.keys(sampleRecords[0]),
-        sample_records: sampleRecords,
-        parsed_records: sampleRecords,
-        message: 'Pre-packaged CIC-IDS dataset loaded.'
-      });
-      setCurrentStep(2);
-      setLoading(false);
-    }, 400);
-  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -140,28 +77,7 @@ export const ThreatDetectionPage: React.FC = () => {
     }
   };
 
-  const handleRunInference = async () => {
-    setLoading(true);
-    setCurrentStep(5);
-    try {
-      const recordsToAnalyze = validationData?.parsed_records || validationData?.sample_records || [
-        { destination_port: 80, flow_duration: 120, total_fwd_packets: 4500, total_backward_packets: 2, total_length_of_fwd_packets: 450000, total_length_of_bwd_packets: 80, fwd_packet_length_max: 100, fwd_packet_length_min: 40, fwd_packet_length_mean: 60, bwd_packet_length_mean: 40, flow_bytes_s: 15000000, flow_packets_s: 35000, flow_iat_mean: 0.1, fwd_iat_mean: 0.1, bwd_iat_mean: 0, fwd_header_length: 90000, bwd_header_length: 40, fwd_packets_s: 35000, bwd_packets_s: 0, min_packet_length: 40, max_packet_length: 100, packet_length_mean: 60, packet_length_std: 10, syn_flag_count: 1, rst_flag_count: 1, psh_flag_count: 0, ack_flag_count: 0, urg_flag_count: 0, down_up_ratio: 0.0, average_packet_size: 60, active_mean: 0, idle_mean: 0 },
-        { destination_port: 443, flow_duration: 1250, total_fwd_packets: 14, total_backward_packets: 10, total_length_of_fwd_packets: 1800, total_length_of_bwd_packets: 500, fwd_packet_length_max: 1800, fwd_packet_length_min: 100, fwd_packet_length_mean: 1800, bwd_packet_length_mean: 500, flow_bytes_s: 100000, flow_packets_s: 20, flow_iat_mean: 100, fwd_iat_mean: 100, bwd_iat_mean: 100, fwd_header_length: 280, bwd_header_length: 200, fwd_packets_s: 10, bwd_packets_s: 10, min_packet_length: 60, max_packet_length: 1800, packet_length_mean: 1150, packet_length_std: 300, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 1, ack_flag_count: 1, urg_flag_count: 0, down_up_ratio: 1.0, average_packet_size: 1150, active_mean: 50, idle_mean: 200 },
-        { destination_port: 22, flow_duration: 8500, total_fwd_packets: 120, total_backward_packets: 120, total_length_of_fwd_packets: 18000, total_length_of_bwd_packets: 14400, fwd_packet_length_max: 250, fwd_packet_length_min: 40, fwd_packet_length_mean: 150, bwd_packet_length_mean: 120, flow_bytes_s: 80000, flow_packets_s: 80, flow_iat_mean: 20, fwd_iat_mean: 20, bwd_iat_mean: 20, fwd_header_length: 2400, bwd_header_length: 2400, fwd_packets_s: 40, bwd_packets_s: 40, min_packet_length: 40, max_packet_length: 250, packet_length_mean: 135, packet_length_std: 30, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 1, ack_flag_count: 1, urg_flag_count: 0, down_up_ratio: 1.0, average_packet_size: 135, active_mean: 20, idle_mean: 100 },
-        { destination_port: 8080, flow_duration: 12, total_fwd_packets: 1, total_backward_packets: 0, total_length_of_fwd_packets: 0, total_length_of_bwd_packets: 0, fwd_packet_length_max: 0, fwd_packet_length_min: 0, fwd_packet_length_mean: 0, bwd_packet_length_mean: 0, flow_bytes_s: 0, flow_packets_s: 500, flow_iat_mean: 5, fwd_iat_mean: 0, bwd_iat_mean: 0, fwd_header_length: 20, bwd_header_length: 0, fwd_packets_s: 500, bwd_packets_s: 0, min_packet_length: 0, max_packet_length: 0, packet_length_mean: 0, packet_length_std: 0, syn_flag_count: 1, rst_flag_count: 0, psh_flag_count: 0, ack_flag_count: 0, urg_flag_count: 0, down_up_ratio: 0.0, average_packet_size: 0, active_mean: 0, idle_mean: 0 }
-      ];
-
-      const res = await detectionService.analyzeBatch(recordsToAnalyze, selectedModel, selectedAsset);
-      setDetectionResults(res);
-      setCurrentStep(6);
-    } catch (err: any) {
-      alert('Inference failed: ' + (err.response?.data?.detail || err.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredResults = detectionResults?.results.filter(r => {
+  const filteredResults = detectionResults?.results.filter((r) => {
     if (filterSeverity !== 'ALL' && r.severity !== filterSeverity) return false;
     if (filterPrediction !== 'ALL' && r.prediction !== filterPrediction) return false;
     return true;
@@ -169,15 +85,59 @@ export const ThreatDetectionPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-slate-800 pb-4">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Radar className="w-6 h-6 text-cyan-400" /> AI Threat Detection & Preprocessing Pipeline
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Upload security logs or network traffic datasets to run feature scaling, 1D-CNN / ANN / LSTM inference, and transparent explainability.
-        </p>
+      {/* HEADER WITH RESET CONTROLS */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800/80 pb-4 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
+            <Radar className="w-6 h-6 text-cyan-400" /> AI Threat Detection & Preprocessing Pipeline
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Upload security logs or network traffic datasets to run feature scaling, 1D-CNN / ANN / LSTM inference, and transparent SHAP explainability.
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {(validationData || detectionResults) && (
+            <button
+              onClick={resetPipeline}
+              className="flex items-center px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 text-xs font-semibold transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-cyan-400" /> Reset & New Upload
+            </button>
+          )}
+
+          {!validationData && !loading && (
+            <button
+              onClick={useSampleDataset}
+              className="flex items-center px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" /> Load CIC-IDS Sample
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ACTIVE LOADING & PROGRESS BAR */}
+      {loading && (
+        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-cyan-500 space-y-3 animate-fadeIn">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-mono text-cyan-300 font-bold flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" />
+              {loadingMessage || 'Processing threat detection pipeline...'}
+            </span>
+            <span className="font-mono text-white font-bold">{progressPercent}%</span>
+          </div>
+          <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+            <div
+              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300 ease-out"
+              style={{ width: `${Math.max(5, progressPercent)}%` }}
+            ></div>
+          </div>
+          <div className="text-[11px] text-slate-400 font-mono">
+            State is persisted in background. You can navigate between pages while inference completes safely.
+          </div>
+        </div>
+      )}
 
       {/* WORKFLOW STEPPER */}
       <div className="grid grid-cols-6 gap-2 text-center text-xs">
@@ -191,12 +151,17 @@ export const ThreatDetectionPage: React.FC = () => {
         ].map((s) => (
           <div
             key={s.num}
-            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${
+            onClick={() => {
+              if (currentStep > s.num || (s.num === 6 && detectionResults)) {
+                setCurrentStep(s.num);
+              }
+            }}
+            className={`p-2.5 rounded-xl border text-xs font-semibold transition-all select-none cursor-pointer ${
               currentStep === s.num
-                ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950'
+                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950 font-bold'
                 : currentStep > s.num
                 ? 'bg-slate-800/80 border-slate-700 text-emerald-400'
-                : 'bg-[#131B2E] border-slate-800 text-slate-500'
+                : 'bg-[#0D1527] border-slate-800 text-slate-500'
             }`}
           >
             {s.label}
@@ -204,16 +169,16 @@ export const ThreatDetectionPage: React.FC = () => {
         ))}
       </div>
 
-      {/* STEP 1: FILE DROPZONE & CONFIG */}
+      {/* STEP 1-5: FILE DROPZONE & PIPELINE CONFIG */}
       {currentStep < 6 && (
-        <div className="glass-card p-6 rounded-xl space-y-6">
+        <div className="glass-card p-6 rounded-2xl space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Target AI Model</label>
+              <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5">Target AI Model Architecture</label>
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
-                className="w-full bg-[#0B0F17] border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#080C14] border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono"
               >
                 <option value="ANN / MLP">ANN / Multi-Layer Perceptron (Dense)</option>
                 <option value="1D CNN">1D Convolutional Neural Network (Spatial)</option>
@@ -223,24 +188,24 @@ export const ThreatDetectionPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Target Endpoint Asset</label>
+              <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5">Target Infrastructure Asset</label>
               <input
                 type="text"
                 value={selectedAsset}
                 onChange={(e) => setSelectedAsset(e.target.value)}
-                className="w-full bg-[#0B0F17] border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#080C14] border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono"
                 placeholder="/api/v1/network"
               />
             </div>
 
             <div className="flex items-end">
               <button
-                onClick={handleRunInference}
+                onClick={runInference}
                 disabled={loading}
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center transition-all shadow-lg shadow-cyan-950"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center transition-all shadow-lg shadow-cyan-950 cursor-pointer disabled:opacity-50"
               >
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                {validationData ? `Run Pipeline Inference (${validationData.num_rows} records)` : 'Run Pipeline Inference'}
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2 fill-current" />}
+                {validationData ? `Run AI Inference (${validationData.num_rows} records)` : 'Run Pipeline Inference'}
               </button>
             </div>
           </div>
@@ -250,16 +215,16 @@ export const ThreatDetectionPage: React.FC = () => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all bg-[#0B0F17]/40 ${
+            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all bg-[#080C14]/60 ${
               isDragging ? 'border-cyan-400 bg-cyan-950/30' : 'border-slate-800 hover:border-cyan-500/50'
             }`}
           >
             <UploadCloud className={`w-12 h-12 mx-auto mb-3 transition-colors ${isDragging ? 'text-cyan-300 animate-bounce' : 'text-cyan-400'}`} />
-            <div className="text-sm font-semibold text-white">
+            <div className="text-sm font-bold text-white">
               {isDragging ? 'Drop your CSV file here!' : 'Upload Defensive Security Log (CSV)'}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Drag & drop any CSV file here, or click Browse below. Universal support for Web Request Logs, Firewall CSVs, Suricata/Snort IDS, AWS CloudTrail, CIC-IDS, and Custom Security CSVs.
+            <p className="text-xs text-slate-400 mt-1 max-w-xl mx-auto">
+              Drag & drop any CSV security dataset here. Universal support for CIC-IDS, Web Server Logs, Snort/Suricata, Firewall exports, and AWS CloudTrail CSVs.
             </p>
             <input
               type="file"
@@ -268,81 +233,91 @@ export const ThreatDetectionPage: React.FC = () => {
               className="hidden"
               id="log-file-input"
             />
-            <div className="mt-4 flex items-center justify-center">
+            <div className="mt-4 flex items-center justify-center gap-3">
               <label
                 htmlFor="log-file-input"
-                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-lg cursor-pointer transition-all shadow-lg shadow-cyan-950/50 flex items-center gap-2"
+                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-xl cursor-pointer transition-all shadow-lg shadow-cyan-950 flex items-center gap-2"
               >
                 <UploadCloud className="w-4 h-4" /> Select & Upload Your CSV File
               </label>
+
+              <button
+                onClick={useSampleDataset}
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-all cursor-pointer"
+              >
+                Load Pre-Packaged Sample
+              </button>
             </div>
           </div>
 
+          {/* Validation Data Preview */}
           {validationData && (
-            <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-lg text-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-emerald-400 font-semibold text-sm">
-                  <CheckCircle2 className="w-4 h-4 mr-2" /> Validation Passed: {validationData.filename} ({validationData.num_rows} records)
+            <div className="p-4 bg-[#080C14] border border-slate-800 rounded-xl text-xs space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div className="flex items-center text-emerald-400 font-semibold text-xs">
+                  <CheckCircle2 className="w-4 h-4 mr-2" /> Validation Succeeded: {validationData.filename} ({validationData.num_rows} records)
                 </div>
                 <button
-                  onClick={handleRunInference}
+                  onClick={runInference}
                   disabled={loading}
-                  className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded flex items-center text-xs shadow-lg shadow-emerald-950"
+                  className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg flex items-center text-xs shadow-lg shadow-emerald-950 cursor-pointer"
                 >
-                  {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Play className="w-3.5 h-3.5 mr-1.5" />}
-                  Analyze {validationData.num_rows} CSV Records
+                  {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />}
+                  Analyze Dataset Records
                 </button>
               </div>
               <div className="text-slate-300">
-                <strong>Detected Feature Columns ({validationData.detected_columns.length}):</strong>{' '}
-                <span className="font-mono text-slate-400">{validationData.detected_columns.slice(0, 10).join(', ')}...</span>
+                <strong className="text-white">Detected Feature Columns ({validationData.detected_columns?.length || 0}):</strong>{' '}
+                <span className="font-mono text-cyan-300/80">{(validationData.detected_columns || []).slice(0, 10).join(', ')}...</span>
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* STEP 6: INFERENCE RESULTS TABLE */}
+      {/* STEP 6: INFERENCE RESULTS */}
       {currentStep === 6 && detectionResults && (
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="glass-card p-4 rounded-xl">
-              <div className="text-[11px] text-slate-400 uppercase">Analyzed Records</div>
-              <div className="text-xl font-bold text-white mt-1">{detectionResults.total_analyzed}</div>
+            <div className="glass-card p-4 rounded-xl border-l-4 border-l-cyan-500">
+              <div className="text-[11px] font-mono text-slate-400 uppercase">Analyzed Records</div>
+              <div className="text-2xl font-bold text-white mt-1 font-mono">{detectionResults.total_analyzed}</div>
             </div>
             <div className="glass-card p-4 rounded-xl border-l-4 border-l-orange-500">
-              <div className="text-[11px] text-slate-400 uppercase">Threats Detected</div>
-              <div className="text-xl font-bold text-orange-400 mt-1">{detectionResults.threats_found}</div>
+              <div className="text-[11px] font-mono text-slate-400 uppercase">Threats Flagged</div>
+              <div className="text-2xl font-bold text-orange-400 mt-1 font-mono">{detectionResults.threats_found}</div>
             </div>
             <div className="glass-card p-4 rounded-xl border-l-4 border-l-red-500">
-              <div className="text-[11px] text-slate-400 uppercase">Critical Severity</div>
-              <div className="text-xl font-bold text-red-400 mt-1">{detectionResults.critical_count}</div>
+              <div className="text-[11px] font-mono text-slate-400 uppercase">Critical Severity</div>
+              <div className="text-2xl font-bold text-red-400 mt-1 font-mono">{detectionResults.critical_count}</div>
             </div>
             <div className="glass-card p-4 rounded-xl border-l-4 border-l-amber-500">
-              <div className="text-[11px] text-slate-400 uppercase">High Severity</div>
-              <div className="text-xl font-bold text-amber-400 mt-1">{detectionResults.high_count}</div>
+              <div className="text-[11px] font-mono text-slate-400 uppercase">High Severity</div>
+              <div className="text-2xl font-bold text-amber-400 mt-1 font-mono">{detectionResults.high_count}</div>
             </div>
-            <div className="glass-card p-4 rounded-xl">
-              <div className="text-[11px] text-slate-400 uppercase">Model Execution</div>
-              <div className="text-xl font-bold text-cyan-400 mt-1 font-mono">{detectionResults.model_used}</div>
+            <div className="glass-card p-4 rounded-xl border-l-4 border-l-blue-500">
+              <div className="text-[11px] font-mono text-slate-400 uppercase">Model Used</div>
+              <div className="text-lg font-bold text-cyan-300 mt-1 font-mono">{detectionResults.model_used}</div>
             </div>
           </div>
 
           {/* Results Table & Filters */}
-          <div className="glass-card p-5 rounded-xl space-y-4">
+          <div className="glass-card p-5 rounded-2xl space-y-4">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h3 className="text-sm font-semibold text-white">Threat Inference Results & Explainable Findings</h3>
-              
+              <div>
+                <h3 className="text-sm font-bold text-white">Threat Inference Results & Explainable Findings</h3>
+                <p className="text-[11px] text-slate-400">Classified flow records with confidence ratings, severity weights, and SHAP explanations.</p>
+              </div>
+
               {/* Filters */}
               <div className="flex items-center space-x-3 text-xs">
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-1.5">
                   <Filter className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-slate-400">Severity:</span>
                   <select
                     value={filterSeverity}
                     onChange={(e) => setFilterSeverity(e.target.value)}
-                    className="bg-[#0B0F17] border border-slate-800 rounded px-2 py-1 text-slate-200"
+                    className="bg-[#080C14] border border-slate-800 rounded-lg px-2.5 py-1 text-slate-200 font-mono"
                   >
                     <option value="ALL">All Severities</option>
                     <option value="Critical">Critical</option>
@@ -362,9 +337,9 @@ export const ThreatDetectionPage: React.FC = () => {
                     downloadAnchor.click();
                     downloadAnchor.remove();
                   }}
-                  className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 flex items-center"
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 flex items-center font-mono cursor-pointer transition-all"
                 >
-                  <Download className="w-3.5 h-3.5 mr-1" /> Export JSON
+                  <Download className="w-3.5 h-3.5 mr-1 text-cyan-400" /> Export JSON
                 </button>
               </div>
             </div>
@@ -372,7 +347,7 @@ export const ThreatDetectionPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 font-medium">
+                  <tr className="border-b border-slate-800 text-slate-400 font-medium font-mono">
                     <th className="pb-3">Index</th>
                     <th className="pb-3">Prediction</th>
                     <th className="pb-3">Confidence</th>
@@ -386,19 +361,19 @@ export const ThreatDetectionPage: React.FC = () => {
                   {filteredResults.map((res) => (
                     <tr key={res.event_index} className="hover:bg-slate-800/40 transition-all">
                       <td className="py-3 font-mono text-slate-400">#{res.event_index + 1}</td>
-                      <td className="py-3 font-semibold text-white">{res.prediction}</td>
+                      <td className="py-3 font-semibold text-white font-mono">{res.prediction}</td>
                       <td className="py-3 font-mono text-cyan-400">{res.confidence}%</td>
                       <td className="py-3 font-mono text-slate-300 font-bold">{res.risk_score} / 100</td>
                       <td className="py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold border" style={{ backgroundColor: `${res.severity_color}15`, borderColor: `${res.severity_color}40`, color: res.severity_color }}>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border font-mono" style={{ backgroundColor: `${res.severity_color}15`, borderColor: `${res.severity_color}40`, color: res.severity_color }}>
                           {res.severity}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-400 max-w-sm truncate">{res.explanation}</td>
+                      <td className="py-3 text-slate-300 max-w-sm truncate leading-relaxed">{res.explanation}</td>
                       <td className="py-3">
                         <button
                           onClick={() => setSelectedResult(res)}
-                          className="px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded flex items-center"
+                          className="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg flex items-center font-mono cursor-pointer transition-all"
                         >
                           <Eye className="w-3.5 h-3.5 mr-1" /> Explain
                         </button>
@@ -414,41 +389,41 @@ export const ThreatDetectionPage: React.FC = () => {
 
       {/* EXPLAINABILITY MODAL */}
       {selectedResult && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-card max-w-2xl w-full p-6 rounded-xl border border-cyan-500/30 space-y-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="glass-card max-w-2xl w-full p-6 rounded-2xl border border-cyan-500/30 space-y-4">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5 text-cyan-400" /> Explainable Finding — #{selectedResult.event_index + 1}
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Model: {selectedResult.model_used}</p>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">Model: {selectedResult.model_used}</p>
               </div>
               <button
                 onClick={() => setSelectedResult(null)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-white text-sm p-1 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="p-3 bg-slate-900 rounded border border-slate-800">
-                <div className="text-slate-400">Prediction</div>
-                <div className="text-sm font-bold text-white mt-0.5">{selectedResult.prediction}</div>
+              <div className="p-3 bg-[#080C14] rounded-xl border border-slate-800">
+                <div className="text-slate-400 text-[10px] font-mono uppercase">Prediction</div>
+                <div className="text-sm font-bold text-white font-mono mt-0.5">{selectedResult.prediction}</div>
               </div>
-              <div className="p-3 bg-slate-900 rounded border border-slate-800">
-                <div className="text-slate-400">Confidence</div>
-                <div className="text-sm font-bold text-cyan-400 mt-0.5">{selectedResult.confidence}%</div>
+              <div className="p-3 bg-[#080C14] rounded-xl border border-slate-800">
+                <div className="text-slate-400 text-[10px] font-mono uppercase">Confidence</div>
+                <div className="text-sm font-bold text-cyan-400 font-mono mt-0.5">{selectedResult.confidence}%</div>
               </div>
-              <div className="p-3 bg-slate-900 rounded border border-slate-800">
-                <div className="text-slate-400">Risk Score</div>
-                <div className="text-sm font-bold text-red-400 mt-0.5">{selectedResult.risk_score} / 100 ({selectedResult.severity})</div>
+              <div className="p-3 bg-[#080C14] rounded-xl border border-slate-800">
+                <div className="text-slate-400 text-[10px] font-mono uppercase">Risk Score</div>
+                <div className="text-sm font-bold text-red-400 font-mono mt-0.5">{selectedResult.risk_score} / 100 ({selectedResult.severity})</div>
               </div>
             </div>
 
             <div>
               <div className="text-xs font-semibold text-white mb-1">Natural Language Rationale</div>
-              <p className="text-xs text-slate-300 p-3 bg-slate-900/80 rounded border border-slate-800">
+              <p className="text-xs text-slate-300 p-3 bg-[#080C14] rounded-xl border border-slate-800 leading-relaxed">
                 {selectedResult.explanation}
               </p>
             </div>
@@ -457,9 +432,9 @@ export const ThreatDetectionPage: React.FC = () => {
               <div className="text-xs font-semibold text-white mb-2">Top Contributing Features</div>
               <div className="space-y-2">
                 {selectedResult.top_features.map((feat) => (
-                  <div key={feat.feature} className="p-2 bg-slate-900/60 rounded border border-slate-800 text-xs flex justify-between items-center">
+                  <div key={feat.feature} className="p-2.5 bg-[#080C14] rounded-xl border border-slate-800 text-xs flex justify-between items-center">
                     <div>
-                      <span className="font-mono text-cyan-300">{feat.feature}</span>
+                      <span className="font-mono text-cyan-300 font-semibold">{feat.feature}</span>
                       <span className="text-slate-400 text-[11px] ml-2">({feat.description})</span>
                     </div>
                     <div className="font-mono text-slate-200">Value: {feat.value} ({feat.contribution_percentage}%)</div>

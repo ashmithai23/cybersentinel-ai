@@ -27,26 +27,30 @@ const LoadingFallback: React.FC = () => (
   </div>
 );
 
+import { DetectionProvider } from './context/DetectionContext';
+
 export const App: React.FC = () => {
   return (
     <Router>
-      <MainLayout>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/detection" element={<ThreatDetectionPage />} />
-            <Route path="/events" element={<SecurityEventsPage />} />
-            <Route path="/findings" element={<VulnerabilityFindingsPage />} />
-            <Route path="/network" element={<NetworkAnalysisPage />} />
-            <Route path="/api-security" element={<ApiSecurityPage />} />
-            <Route path="/models" element={<AiModelsPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/info" element={<ProjectInfoPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
-        </Suspense>
-      </MainLayout>
+      <DetectionProvider>
+        <MainLayout>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/detection" element={<ThreatDetectionPage />} />
+              <Route path="/events" element={<SecurityEventsPage />} />
+              <Route path="/findings" element={<VulnerabilityFindingsPage />} />
+              <Route path="/network" element={<NetworkAnalysisPage />} />
+              <Route path="/api-security" element={<ApiSecurityPage />} />
+              <Route path="/models" element={<AiModelsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/info" element={<ProjectInfoPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Routes>
+          </Suspense>
+        </MainLayout>
+      </DetectionProvider>
     </Router>
   );
 };
