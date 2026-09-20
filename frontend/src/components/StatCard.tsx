@@ -87,11 +87,10 @@ export const StatCard: React.FC<StatCardProps> = ({
           <div className="text-3xl font-extrabold text-white mt-2 tracking-tight font-sans flex items-baseline gap-2">
             <span>{value}</span>
             {trend && (
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full font-mono border ${
-                trendUp
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full font-mono border ${trendUp
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-              }`}>
+                }`}>
                 {trendUp ? '↑' : '↓'} {trend}
               </span>
             )}

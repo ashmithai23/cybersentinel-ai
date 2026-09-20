@@ -22,7 +22,10 @@ import {
   Volume2,
   VolumeX,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  GitCommit,
+  CheckCircle2,
+  Flame
 } from 'lucide-react';
 import { authService, settingsService } from '../services/api';
 import { SystemStatus, User } from '../types';
@@ -398,17 +401,127 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 mt-2 w-60 bg-[#0B101D] border border-cyan-500/30 rounded-2xl shadow-2xl p-3 z-50 backdrop-blur-2xl"
+                    className="absolute right-0 mt-2 w-84 sm:w-96 bg-[#0B101D]/95 border border-emerald-500/30 rounded-2xl shadow-2xl p-4 z-50 backdrop-blur-2xl text-slate-200"
                   >
-                    <div className="px-2 py-2 border-b border-slate-800 text-xs">
-                      <div className="font-bold text-white">{user?.full_name}</div>
-                      <div className="text-slate-400 text-[11px] font-mono">{user?.email}</div>
+                    {/* Analyst Profile Header */}
+                    <div className="flex items-start justify-between pb-3 border-b border-slate-800">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-emerald-950/50 border border-emerald-400/40">
+                            {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'A'}
+                          </div>
+                          <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse border-2 border-[#0B101D] absolute -bottom-0.5 -right-0.5 shadow-sm shadow-emerald-400"></span>
+                        </div>
+                        <div>
+                          <div className="font-bold text-white text-sm flex items-center gap-1.5">
+                            {user?.full_name || 'Lead Security Analyst'}
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              ADMIN
+                            </span>
+                          </div>
+                          <div className="text-slate-400 text-[11px] font-mono">{user?.email || 'admin@cybersentinel.ai'}</div>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Dark Green Profile Contribution Heatmap */}
+                    <div className="py-3 border-b border-slate-800/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-200 font-mono">
+                          <GitCommit className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Profile Contributions</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-amber-400 fill-amber-400" /> 24 Day Streak
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 18 columns x 7 rows dark green git contribution matrix */}
+                      <div className="bg-[#090D16] p-2.5 rounded-xl border border-slate-800/90 shadow-inner">
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1.5 font-mono">
+                          <span>482 commits in 2026</span>
+                          <span className="text-emerald-400 font-semibold">Dark Green Theme</span>
+                        </div>
+
+                        <div className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-auto py-1">
+                          {Array.from({ length: 126 }).map((_, idx) => {
+                            const col = Math.floor(idx / 7);
+                            const row = idx % 7;
+                            const pseudo = ((col * 13 + row * 7 + 3) * 17) % 23;
+                            let colorClass = 'bg-[#161b22] border-slate-800/60';
+                            let count = 0;
+
+                            if (pseudo > 18) {
+                              colorClass = 'bg-[#39d353] border-emerald-300 shadow-sm shadow-emerald-400/40';
+                              count = 14;
+                            } else if (pseudo > 13) {
+                              colorClass = 'bg-[#26a641] border-[#39d353]/30 shadow-sm shadow-emerald-950';
+                              count = 9;
+                            } else if (pseudo > 7) {
+                              colorClass = 'bg-[#006d32] border-[#26a641]/30';
+                              count = 5;
+                            } else if (pseudo > 2) {
+                              colorClass = 'bg-[#0e4429] border-[#006d32]/40';
+                              count = 2;
+                            }
+
+                            return (
+                              <div
+                                key={idx}
+                                title={`${count} security contributions`}
+                                className={`w-2.5 h-2.5 rounded-sm border transition-all hover:scale-125 cursor-pointer ${colorClass}`}
+                              />
+                            );
+                          })}
+                        </div>
+
+                        {/* Dark Green Legend */}
+                        <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono mt-2 pt-1.5 border-t border-slate-800/60">
+                          <span>Less</span>
+                          <div className="flex items-center gap-1">
+                            <span className="w-2.5 h-2.5 rounded-sm bg-[#161b22] border border-slate-800" title="No contributions"></span>
+                            <span className="w-2.5 h-2.5 rounded-sm bg-[#0e4429] border border-[#006d32]/40" title="1-3 contributions"></span>
+                            <span className="w-2.5 h-2.5 rounded-sm bg-[#006d32] border border-[#26a641]/40" title="4-7 contributions"></span>
+                            <span className="w-2.5 h-2.5 rounded-sm bg-[#26a641] border border-[#39d353]/40" title="8-11 contributions"></span>
+                            <span className="w-2.5 h-2.5 rounded-sm bg-[#39d353] border border-emerald-300 shadow-sm shadow-emerald-400/40" title="12+ contributions"></span>
+                          </div>
+                          <span>More</span>
+                        </div>
+                      </div>
+
+                      {/* Contribution summary stats */}
+                      <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                        <div className="p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg">
+                          <div className="text-slate-400 text-[9px]">Git Commits</div>
+                          <div className="text-emerald-400 font-bold text-xs mt-0.5">214</div>
+                        </div>
+                        <div className="p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg">
+                          <div className="text-slate-400 text-[9px]">Triages</div>
+                          <div className="text-emerald-400 font-bold text-xs mt-0.5">198</div>
+                        </div>
+                        <div className="p-1.5 bg-slate-900/60 border border-slate-800 rounded-lg">
+                          <div className="text-slate-400 text-[9px]">XAI Audits</div>
+                          <div className="text-emerald-400 font-bold text-xs mt-0.5">70</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Git Sync Status Banner */}
+                    <div className="mt-2.5 px-2.5 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-[11px] font-mono">
+                      <div className="flex items-center space-x-1.5 text-emerald-300 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Profile Dark Green Heatmap Synced</span>
+                      </div>
+                    </div>
+
+                    {/* Sign Out Action */}
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-xl flex items-center mt-2 cursor-pointer transition-colors"
+                      className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-xl flex items-center justify-center mt-2 cursor-pointer transition-colors border border-transparent hover:border-red-500/20 font-semibold"
                     >
-                      <LogOut className="w-3.5 h-3.5 mr-2" /> Sign Out Session
+                      <LogOut className="w-3.5 h-3.5 mr-2" /> Sign Out Analyst Session
                     </button>
                   </motion.div>
                 )}
