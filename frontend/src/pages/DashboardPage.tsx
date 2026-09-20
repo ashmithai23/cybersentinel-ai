@@ -20,7 +20,8 @@ import {
   Radio,
   ArrowRight,
   Sparkles,
-  Zap
+  Zap,
+  Globe
 } from 'lucide-react';
 import {
   AreaChart,
@@ -37,8 +38,11 @@ import {
 import { dashboardService } from '../services/api';
 import { DashboardStats } from '../types';
 import { StatCard } from '../components/StatCard';
-import { CyberRadar } from '../components/CyberRadar';
+import { CyberRadar3D } from '../components/CyberRadar3D';
+import { CyberGlobe3D } from '../components/CyberGlobe3D';
+import { Card3D } from '../components/Card3D';
 import { CyberButton } from '../components/CyberButton';
+import { cyberSound } from '../utils/cyberSound';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,12 +67,13 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   const triggerAuditConfetti = () => {
+    cyberSound.playSuccessChime();
     setIsAuditing(true);
     confetti({
-      particleCount: 75,
-      spread: 80,
+      particleCount: 100,
+      spread: 90,
       origin: { y: 0.6 },
-      colors: ['#06b6d4', '#3b82f6', '#10b981', '#ef4444']
+      colors: ['#06b6d4', '#3b82f6', '#10b981', '#ef4444', '#a855f7']
     });
     setTimeout(() => {
       setIsAuditing(false);
@@ -90,7 +95,7 @@ export const DashboardPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh] text-slate-400">
         <RefreshCw className="w-8 h-8 animate-spin text-cyan-400 mr-3" />
-        <span className="font-mono text-sm tracking-wide text-cyan-300">Loading Security Operations Intelligence...</span>
+        <span className="font-mono text-sm tracking-wide text-cyan-300">Loading Enterprise 3D SOC Operations Intelligence...</span>
       </div>
     );
   }
@@ -100,26 +105,32 @@ export const DashboardPage: React.FC = () => {
       {/* HEADER BANNER & QUICK ACTIONS */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-cyan-500/20 pb-5 gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-3">
-            <ShieldAlert className="w-7 h-7 text-cyan-400 animate-pulse" /> Security Intelligence Command Center
+          <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-3 font-sans">
+            <ShieldAlert className="w-7 h-7 text-cyan-400 animate-pulse" /> 3D Security Intelligence Command Center
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time AI defensive threat detection, multi-model packet classification, and SOC incident telemetry.
+          <p className="text-xs text-slate-400 mt-1 font-sans">
+            Real-time 3D WebGL defensive threat telemetry, multi-model packet classification, and SOC incident engine.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <CyberButton
-            onClick={() => navigate('/detection')}
+            onClick={() => {
+              cyberSound.playCyberClick();
+              navigate('/detection');
+            }}
             icon={Radar}
             variant="primary"
             size="md"
           >
-            Run AI Threat Pipeline
+            Run 3D Threat Pipeline
           </CyberButton>
 
           <CyberButton
-            onClick={() => navigate('/network')}
+            onClick={() => {
+              cyberSound.playCyberClick();
+              navigate('/network');
+            }}
             icon={Network}
             variant="secondary"
             size="md"
@@ -139,7 +150,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI METRIC CARDS GRID WITH FRAMER MOTION ANIMATION */}
+      {/* KPI METRIC CARDS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         <StatCard
           title="Total Events"
@@ -182,7 +193,7 @@ export const DashboardPage: React.FC = () => {
           subtext="ANN / CNN Ensemble"
           icon={Cpu}
           color="cyan"
-          badgeText="PyTorch"
+          badgeText="PyTorch 3D"
         />
 
         <StatCard
@@ -203,63 +214,74 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* CYBER RADAR SCANNER & MITRE ATT&CK TACTICS SNAPSHOT */}
+      {/* 3D WEBGL GLOBE & 3D HOLOGRAPHIC RADAR GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Animated Cyber Radar Scanner Component */}
-        <div className="lg:col-span-1">
-          <CyberRadar />
+        {/* Interactive 3D WebGL Threat Globe */}
+        <div className="lg:col-span-2">
+          <CyberGlobe3D />
         </div>
 
-        {/* MITRE ATT&CK TACTICS SNAPSHOT */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20 flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">MITRE ATT&CK Framework Live Threat TTPs</span>
-            </div>
-            <button
-              onClick={() => navigate('/findings')}
-              className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold"
-            >
-              View Active Findings <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
-            {mitreTechniques.map((ttp) => (
-              <motion.div
-                key={ttp.code}
-                whileHover={{ scale: 1.04, y: -2 }}
-                onClick={() => navigate('/findings')}
-                className="p-3 bg-[#060A14] hover:bg-[#0C1222] border border-slate-800 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer group"
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-mono font-bold text-cyan-300 group-hover:text-cyan-200">{ttp.code}</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
-                    ttp.severity === 'Critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                  }`}>
-                    {ttp.severity}
-                  </span>
-                </div>
-                <div className="font-semibold text-slate-200 truncate">{ttp.name}</div>
-                <div className="text-[10px] text-slate-500 font-mono mt-1">{ttp.activeCount} detected vectors</div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-            <span>Threat Taxonomy: CIC-IDS2017 Dataset Schema</span>
-            <span className="text-cyan-400 font-semibold flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-cyan-400" /> Automated SOAR Mitigation Playbooks Active
-            </span>
-          </div>
+        {/* 3D Volumetric Radar Scanner */}
+        <div className="lg:col-span-1">
+          <CyberRadar3D />
         </div>
       </div>
+
+      {/* MITRE ATT&CK TACTICS SNAPSHOT */}
+      <Card3D glowColor="cyan" className="p-5">
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">MITRE ATT&CK Framework Live Threat TTPs</span>
+          </div>
+          <button
+            onClick={() => {
+              cyberSound.playCyberClick();
+              navigate('/findings');
+            }}
+            className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold cursor-pointer"
+          >
+            View Active Findings <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+          {mitreTechniques.map((ttp) => (
+            <motion.div
+              key={ttp.code}
+              whileHover={{ scale: 1.04, y: -2 }}
+              onClick={() => {
+                cyberSound.playCyberClick();
+                navigate('/findings');
+              }}
+              className="p-3 bg-[#060A14] hover:bg-[#0C1222] border border-slate-800 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer group shadow-md"
+            >
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-mono font-bold text-cyan-300 group-hover:text-cyan-200">{ttp.code}</span>
+                <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
+                  ttp.severity === 'Critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                }`}>
+                  {ttp.severity}
+                </span>
+              </div>
+              <div className="font-semibold text-slate-200 truncate">{ttp.name}</div>
+              <div className="text-[10px] text-slate-500 font-mono mt-1">{ttp.activeCount} detected vectors</div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+          <span>Threat Taxonomy: CIC-IDS2017 Dataset Schema</span>
+          <span className="text-cyan-400 font-semibold flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Automated SOAR Mitigation Playbooks Active
+          </span>
+        </div>
+      </Card3D>
 
       {/* CHARTS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Threat Timeline Area Chart */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20">
+        <Card3D glowColor="cyan" className="lg:col-span-2 p-5">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-sm font-bold text-white">Threat Activity Over Time (24h Timeline)</h3>
@@ -298,10 +320,10 @@ export const DashboardPage: React.FC = () => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card3D>
 
         {/* Attack Category Pie Chart */}
-        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 flex flex-col justify-between">
+        <Card3D glowColor="purple" className="p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Attack Category Distribution</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Classification by dataset threat categories.</p>
@@ -341,13 +363,13 @@ export const DashboardPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Card3D>
       </div>
 
       {/* LOWER SECTION: TOP ENDPOINTS & RECENT FINDINGS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Affected Endpoints */}
-        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
+        <Card3D glowColor="indigo" className="p-5 space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-white">Top Targeted Infrastructure Assets</h3>
             <span className="text-[10px] font-mono text-cyan-400">Endpoints</span>
@@ -373,18 +395,21 @@ export const DashboardPage: React.FC = () => {
               </motion.div>
             ))}
           </div>
-        </div>
+        </Card3D>
 
         {/* Recent Security Findings Table */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
+        <Card3D glowColor="rose" className="lg:col-span-2 p-5 space-y-3">
           <div className="flex justify-between items-center mb-1">
             <div>
               <h3 className="text-sm font-bold text-white">Recent Security Intelligence Findings</h3>
               <p className="text-[11px] text-slate-400">Active threats flagged by deep learning models requiring analyst validation.</p>
             </div>
             <button
-              onClick={() => navigate('/findings')}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold"
+              onClick={() => {
+                cyberSound.playCyberClick();
+                navigate('/findings');
+              }}
+              className="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold cursor-pointer"
             >
               All Findings <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -405,7 +430,10 @@ export const DashboardPage: React.FC = () => {
                 {(stats?.recent_findings || []).map((finding) => (
                   <tr
                     key={finding.id}
-                    onClick={() => navigate('/findings')}
+                    onClick={() => {
+                      cyberSound.playCyberClick();
+                      navigate('/findings');
+                    }}
                     className="hover:bg-cyan-500/10 transition-all cursor-pointer"
                   >
                     <td className="py-3">
@@ -432,7 +460,7 @@ export const DashboardPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card3D>
       </div>
     </div>
   );
