@@ -8,6 +8,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-v2.2-EE4C2C.svg)](https://pytorch.org)
 [![React](https://img.shields.io/badge/React-v18.2-61DAFB.svg)](https://reactjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v3.4-38B2AC.svg)](https://tailwindcss.com)
+[![Three.js 3D](https://img.shields.io/badge/Three.js-3D_WebGL-000000.svg)](https://threejs.org)
 
 ---
 
