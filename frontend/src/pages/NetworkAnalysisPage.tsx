@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Network,
   Activity,
@@ -15,7 +16,8 @@ import {
   CheckCircle2,
   RefreshCw,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 import {
   PieChart,
@@ -31,6 +33,8 @@ import {
 } from 'recharts';
 import { networkService } from '../services/api';
 import { NetworkAnalysis } from '../types';
+import { StatCard } from '../components/StatCard';
+import { CyberButton } from '../components/CyberButton';
 
 interface TopologyNode {
   id: string;
@@ -54,7 +58,6 @@ export const NetworkAnalysisPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<TopologyNode | null>(null);
   const [blockedIps, setBlockedIps] = useState<string[]>([]);
-  const [protocolFilter, setProtocolFilter] = useState<string>('ALL');
 
   const fetchOverview = async () => {
     setLoading(true);
@@ -158,10 +161,10 @@ export const NetworkAnalysisPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800/80 pb-4 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-cyan-500/20 pb-4 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <Network className="w-6 h-6 text-cyan-400" /> Network Flow, Topology & Protocol Telemetry
+          <h1 className="text-2xl font-extrabold text-white flex items-center gap-3">
+            <Network className="w-7 h-7 text-cyan-400 animate-pulse" /> Network Flow, Topology & Protocol Telemetry
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Real-time defensive packet flow analysis, live animated SOC network topology, protocol share, and anomaly identification.
@@ -169,46 +172,55 @@ export const NetworkAnalysisPage: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3">
-          <button
+          <CyberButton
             onClick={fetchOverview}
-            className="flex items-center px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-all cursor-pointer"
+            icon={RefreshCw}
+            variant="secondary"
+            size="sm"
           >
-            <RefreshCw className={`w-3.5 h-3.5 mr-2 text-cyan-400 ${loading ? 'animate-spin' : ''}`} /> Refresh Telemetry
-          </button>
+            Refresh Telemetry
+          </CyberButton>
         </div>
       </div>
 
       {/* TOP TELEMETRY CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-cyan-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Total Packets Analyzed</div>
-          <div className="text-2xl font-bold text-white mt-1 font-mono">{(data?.total_packets || 24851).toLocaleString()}</div>
-          <div className="text-[10px] text-cyan-400 mt-1 font-mono">Real-time pps stream</div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Packets Analyzed"
+          value={(data?.total_packets || 24851).toLocaleString()}
+          subtext="Real-time pps stream"
+          icon={Activity}
+          color="cyan"
+          badgeText="Inference Stream"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-blue-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Total Bandwidth Analyzed</div>
-          <div className="text-2xl font-bold text-blue-400 mt-1 font-mono">{data?.total_bandwidth_mb || 2017.7} <span className="text-xs text-slate-400">MB</span></div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">Peak: 510.5 Mbps</div>
-        </div>
+        <StatCard
+          title="Bandwidth Analyzed"
+          value={`${data?.total_bandwidth_mb || 2017.7} MB`}
+          subtext="Peak: 510.5 Mbps"
+          icon={Radio}
+          color="indigo"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-red-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Unique External Sources</div>
-          <div className="text-2xl font-bold text-red-400 mt-1 font-mono">{data?.unique_sources || 342}</div>
-          <div className="text-[10px] text-red-400 flex items-center mt-1 font-mono">
-            <AlertTriangle className="w-3 h-3 mr-1" /> 18 Anomalous IPs
-          </div>
-        </div>
+        <StatCard
+          title="Unique Source IPs"
+          value={data?.unique_sources || 342}
+          subtext="18 Anomalous IPs"
+          icon={Globe}
+          color="rose"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-emerald-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Active Defense Firewalls</div>
-          <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono">{blockedIps.length} <span className="text-xs text-slate-400">Rules Active</span></div>
-          <div className="text-[10px] text-emerald-400 mt-1 font-mono">In-line Packet Drop</div>
-        </div>
+        <StatCard
+          title="Active Defense Firewall"
+          value={`${blockedIps.length} Rules`}
+          subtext="In-line Packet Drop"
+          icon={ShieldCheck}
+          color="emerald"
+        />
       </div>
 
       {/* INTERACTIVE NETWORK TOPOLOGY MAP */}
-      <div className="glass-card p-5 rounded-2xl relative overflow-hidden">
+      <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 relative overflow-hidden shadow-2xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -224,10 +236,9 @@ export const NetworkAnalysisPage: React.FC = () => {
         </div>
 
         {/* SVG TOPOLOGY CANVAS */}
-        <div className="w-full h-80 bg-[#070B14] rounded-xl border border-slate-800/80 relative overflow-hidden">
+        <div className="w-full h-80 bg-[#060A14] rounded-xl border border-slate-800/80 relative overflow-hidden">
           <svg className="w-full h-full" viewBox="0 0 960 320">
             <defs>
-              {/* Animated Glowing Attack Gradient */}
               <linearGradient id="attackLine" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#EF4444" stopOpacity="0.8" />
                 <stop offset="100%" stopColor="#F97316" stopOpacity="0.8" />
@@ -239,19 +250,12 @@ export const NetworkAnalysisPage: React.FC = () => {
             </defs>
 
             {/* Connecting Lines */}
-            {/* Ext-1 to FW */}
             <line x1="70" y1="90" x2="270" y2="160" stroke="#EF4444" strokeWidth="2" strokeDasharray="6 4" className="animate-pulse" />
-            {/* Ext-2 to FW */}
             <line x1="70" y1="230" x2="270" y2="160" stroke="#F97316" strokeWidth="2" strokeDasharray="6 4" />
-            {/* FW to GW */}
             <line x1="270" y1="160" x2="470" y2="160" stroke="#06B6D4" strokeWidth="3" />
-            {/* GW to App */}
             <line x1="470" y1="160" x2="680" y2="90" stroke="#10B981" strokeWidth="2" />
-            {/* GW to Bastion */}
             <line x1="470" y1="160" x2="680" y2="230" stroke="#EF4444" strokeWidth="2" strokeDasharray="5 3" />
-            {/* App to DB */}
             <line x1="680" y1="90" x2="880" y2="160" stroke="#06B6D4" strokeWidth="2" />
-            {/* Bastion to DB */}
             <line x1="680" y1="230" x2="880" y2="160" stroke="#64748B" strokeWidth="1.5" strokeDasharray="4 4" />
 
             {/* Animated Packet Pulses */}
@@ -275,7 +279,7 @@ export const NetworkAnalysisPage: React.FC = () => {
                 >
                   <circle
                     r={isSelected ? 26 : 22}
-                    fill="#0F172A"
+                    fill="#0B101D"
                     stroke={
                       isBlocked
                         ? '#64748B'
@@ -323,82 +327,87 @@ export const NetworkAnalysisPage: React.FC = () => {
           </svg>
 
           {/* NODE TELEMETRY INSPECTOR MODAL/DRAWER */}
-          {selectedNode && (
-            <div className="absolute right-4 top-4 bottom-4 w-72 bg-[#0F172A]/95 border border-cyan-500/40 rounded-xl p-4 shadow-2xl backdrop-blur-md z-20 flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                  <div className="flex items-center space-x-2">
-                    <Server className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-white">{selectedNode.label}</span>
+          <AnimatePresence>
+            {selectedNode && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="absolute right-4 top-4 bottom-4 w-72 bg-[#0B101D]/95 border border-cyan-500/40 rounded-xl p-4 shadow-2xl backdrop-blur-md z-20 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                    <div className="flex items-center space-x-2">
+                      <Server className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs font-bold text-white">{selectedNode.label}</span>
+                    </div>
+                    <button onClick={() => setSelectedNode(null)} className="text-slate-400 hover:text-white p-1">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button onClick={() => setSelectedNode(null)} className="text-slate-400 hover:text-white p-1">
-                    <X className="w-4 h-4" />
-                  </button>
+
+                  <div className="space-y-2.5 mt-3 text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-mono uppercase">IP Address</span>
+                      <div className="font-mono text-cyan-300 font-bold">{selectedNode.ip}</div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                      <div className="p-2 bg-[#060A14] rounded-lg border border-slate-800">
+                        <span className="text-slate-500 text-[10px]">Port:</span>
+                        <div className="text-white font-bold">{selectedNode.details.port || 'Any'}</div>
+                      </div>
+                      <div className="p-2 bg-[#060A14] rounded-lg border border-slate-800">
+                        <span className="text-slate-500 text-[10px]">Latency:</span>
+                        <div className="text-white font-bold">{selectedNode.details.latency || 'N/A'}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-mono uppercase">Packet Velocity</span>
+                      <div className="font-mono text-emerald-400 font-semibold">{selectedNode.details.packetsPerSec?.toLocaleString()} pps</div>
+                    </div>
+
+                    {selectedNode.details.threatsDetected ? (
+                      <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-[11px]">
+                        <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
+                        {selectedNode.details.threatsDetected} Malicious Packets Filtered
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-[11px]">
+                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                        Zero Anomalies Detected
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2.5 mt-3 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-mono uppercase">IP Address</span>
-                    <div className="font-mono text-cyan-300 font-bold">{selectedNode.ip}</div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-                    <div className="p-2 bg-[#080C14] rounded-lg border border-slate-800">
-                      <span className="text-slate-500 text-[10px]">Port:</span>
-                      <div className="text-white font-bold">{selectedNode.details.port || 'Any'}</div>
-                    </div>
-                    <div className="p-2 bg-[#080C14] rounded-lg border border-slate-800">
-                      <span className="text-slate-500 text-[10px]">Latency:</span>
-                      <div className="text-white font-bold">{selectedNode.details.latency || 'N/A'}</div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-slate-500 font-mono uppercase">Packet Velocity</span>
-                    <div className="font-mono text-emerald-400 font-semibold">{selectedNode.details.packetsPerSec?.toLocaleString()} pps</div>
-                  </div>
-
-                  {selectedNode.details.threatsDetected ? (
-                    <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-[11px]">
-                      <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
-                      {selectedNode.details.threatsDetected} Malicious Packets Filtered
-                    </div>
-                  ) : (
-                    <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-[11px]">
-                      <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
-                      Zero Anomalies Detected
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {selectedNode.type === 'external' && (
-                <button
-                  onClick={() => handleBlockIp(selectedNode.ip)}
-                  className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    blockedIps.includes(selectedNode.ip)
-                      ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                      : 'bg-red-500 hover:bg-red-400 text-white shadow-lg shadow-red-950'
-                  }`}
-                >
-                  {blockedIps.includes(selectedNode.ip) ? 'Unblock Source IP' : 'Block IP via Firewall (Drop)'}
-                </button>
-              )}
-            </div>
-          )}
+                {selectedNode.type === 'external' && (
+                  <CyberButton
+                    onClick={() => handleBlockIp(selectedNode.ip)}
+                    variant={blockedIps.includes(selectedNode.ip) ? 'secondary' : 'danger'}
+                    size="sm"
+                    className="w-full"
+                  >
+                    {blockedIps.includes(selectedNode.ip) ? 'Unblock Source IP' : 'Block IP via Firewall (Drop)'}
+                  </CyberButton>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* CHARTS ROW: THROUGHPUT & PROTOCOLS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bandwidth & Flow Chart */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl">
+        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-sm font-bold text-white">Traffic Throughput Timeline (Mbps)</h3>
               <p className="text-[11px] text-slate-400">Monitoring real-time bandwidth spikes and anomalies</p>
             </div>
-            <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">
+            <span className="text-[10px] font-mono text-cyan-400 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 font-semibold">
               Avg: 184 Mbps
             </span>
           </div>
@@ -424,7 +433,7 @@ export const NetworkAnalysisPage: React.FC = () => {
         </div>
 
         {/* Protocol Breakdown */}
-        <div className="glass-card p-5 rounded-2xl flex flex-col justify-between">
+        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Protocol Distribution</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Packet share across transport protocols</p>
@@ -455,7 +464,7 @@ export const NetworkAnalysisPage: React.FC = () => {
                   <span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: COLORS[i] }}></span>
                   {p.protocol}
                 </span>
-                <span className="font-mono text-cyan-400">{p.percentage}% ({p.packets.toLocaleString()} pkts)</span>
+                <span className="font-mono text-cyan-400 font-bold">{p.percentage}% ({p.packets.toLocaleString()} pkts)</span>
               </div>
             ))}
           </div>
@@ -464,7 +473,7 @@ export const NetworkAnalysisPage: React.FC = () => {
 
       {/* TOP SOURCES & ANOMALY ALERTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass-card p-5 rounded-2xl space-y-3">
+        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-white">Top External Talkers & Threat Attribution</h3>
             <span className="text-[11px] text-slate-400 font-mono">5 High Volume IPs</span>
@@ -475,8 +484,8 @@ export const NetworkAnalysisPage: React.FC = () => {
               return (
                 <div
                   key={src.ip}
-                  className={`p-3 bg-[#080C14] border rounded-xl flex justify-between items-center transition-all ${
-                    isBlocked ? 'border-slate-700 opacity-60' : 'border-slate-800 hover:border-slate-700'
+                  className={`p-3 bg-[#060A14] border rounded-xl flex justify-between items-center transition-all ${
+                    isBlocked ? 'border-slate-700 opacity-60' : 'border-slate-800 hover:border-cyan-500/40'
                   }`}
                 >
                   <div>
@@ -511,7 +520,7 @@ export const NetworkAnalysisPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-card p-5 rounded-2xl space-y-3">
+        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-red-400" /> Automated Anomaly Alerts & Attack Indicators
           </h3>

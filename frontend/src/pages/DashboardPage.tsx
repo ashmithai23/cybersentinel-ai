@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import {
   ShieldAlert,
   Activity,
@@ -16,7 +18,9 @@ import {
   Lock,
   FileText,
   Radio,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import {
   AreaChart,
@@ -32,11 +36,15 @@ import {
 } from 'recharts';
 import { dashboardService } from '../services/api';
 import { DashboardStats } from '../types';
+import { StatCard } from '../components/StatCard';
+import { CyberRadar } from '../components/CyberRadar';
+import { CyberButton } from '../components/CyberButton';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuditing, setIsAuditing] = useState(false);
 
   const fetchOverview = async () => {
     setLoading(true);
@@ -54,6 +62,20 @@ export const DashboardPage: React.FC = () => {
     fetchOverview();
   }, []);
 
+  const triggerAuditConfetti = () => {
+    setIsAuditing(true);
+    confetti({
+      particleCount: 75,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#06b6d4', '#3b82f6', '#10b981', '#ef4444']
+    });
+    setTimeout(() => {
+      setIsAuditing(false);
+      fetchOverview();
+    }, 1200);
+  };
+
   const COLORS = ['#EF4444', '#F97316', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6'];
 
   const mitreTechniques = [
@@ -66,9 +88,9 @@ export const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full text-slate-400">
+      <div className="flex items-center justify-center min-h-[60vh] text-slate-400">
         <RefreshCw className="w-8 h-8 animate-spin text-cyan-400 mr-3" />
-        <span className="font-mono">Loading Security Operations Intelligence...</span>
+        <span className="font-mono text-sm tracking-wide text-cyan-300">Loading Security Operations Intelligence...</span>
       </div>
     );
   }
@@ -76,136 +98,174 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* HEADER BANNER & QUICK ACTIONS */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-800/80 pb-4 gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-cyan-500/20 pb-5 gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-            <ShieldAlert className="w-6 h-6 text-cyan-400" /> Security Intelligence Command Center
+          <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-3">
+            <ShieldAlert className="w-7 h-7 text-cyan-400 animate-pulse" /> Security Intelligence Command Center
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Real-time AI defensive threat detection, multi-model packet classification, and SOC incident telemetry.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
+        <div className="flex flex-wrap items-center gap-3">
+          <CyberButton
             onClick={() => navigate('/detection')}
-            className="flex items-center px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-950 transition-all cursor-pointer"
+            icon={Radar}
+            variant="primary"
+            size="md"
           >
-            <Radar className="w-3.5 h-3.5 mr-1.5 fill-current" /> Run Threat Pipeline
-          </button>
+            Run AI Threat Pipeline
+          </CyberButton>
 
-          <button
+          <CyberButton
             onClick={() => navigate('/network')}
-            className="flex items-center px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-all cursor-pointer"
+            icon={Network}
+            variant="secondary"
+            size="md"
           >
-            <Network className="w-3.5 h-3.5 mr-1.5 text-cyan-400" /> Topology Map
-          </button>
+            Topology Map
+          </CyberButton>
 
-          <button
-            onClick={fetchOverview}
-            className="flex items-center p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition-all cursor-pointer"
-            title="Refresh Feed"
+          <CyberButton
+            onClick={triggerAuditConfetti}
+            icon={Zap}
+            variant="outline"
+            size="md"
+            disabled={isAuditing}
           >
-            <RefreshCw className="w-4 h-4 text-cyan-400" />
-          </button>
+            {isAuditing ? 'Auditing SOC...' : 'Auto Audit'}
+          </CyberButton>
         </div>
       </div>
 
-      {/* KPI METRIC CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-cyan-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Total Events</div>
-          <div className="text-2xl font-bold text-white mt-1 font-mono">{(stats?.total_events || 24851).toLocaleString()}</div>
-          <div className="text-[10px] text-emerald-400 flex items-center mt-1 font-mono">
-            <TrendingUp className="w-3 h-3 mr-1" /> +12.4% / 24h
-          </div>
-        </div>
+      {/* KPI METRIC CARDS GRID WITH FRAMER MOTION ANIMATION */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+        <StatCard
+          title="Total Events"
+          value={(stats?.total_events || 24851).toLocaleString()}
+          subtext="+12.4% / 24h"
+          icon={Activity}
+          color="cyan"
+          badgeText="Live Stream"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-orange-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Threats Detected</div>
-          <div className="text-2xl font-bold text-orange-400 mt-1 font-mono">{(stats?.threats_detected || 1284).toLocaleString()}</div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">5.1% anomaly rate</div>
-        </div>
+        <StatCard
+          title="Threats Detected"
+          value={(stats?.threats_detected || 1284).toLocaleString()}
+          subtext="5.1% anomaly rate"
+          icon={ShieldAlert}
+          color="amber"
+          badgeText="AI Flagged"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-red-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Critical Findings</div>
-          <div className="text-2xl font-bold text-red-400 mt-1 font-mono">{stats?.critical_findings || 37}</div>
-          <div className="text-[10px] text-red-400/90 mt-1 font-mono">Immediate Action</div>
-        </div>
+        <StatCard
+          title="Critical Findings"
+          value={stats?.critical_findings || 37}
+          subtext="Immediate Action"
+          icon={AlertTriangle}
+          color="rose"
+          badgeText="SOAR P0"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-amber-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">High Findings</div>
-          <div className="text-2xl font-bold text-amber-400 mt-1 font-mono">{stats?.high_findings || 182}</div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">Under Investigation</div>
-        </div>
+        <StatCard
+          title="High Findings"
+          value={stats?.high_findings || 182}
+          subtext="Under Investigation"
+          icon={Filter}
+          color="amber"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-blue-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">Model Accuracy</div>
-          <div className="text-2xl font-bold text-cyan-300 mt-1 font-mono">98.3%</div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">ANN / 1D-CNN Ensemble</div>
-        </div>
+        <StatCard
+          title="Model Accuracy"
+          value="98.3%"
+          subtext="ANN / CNN Ensemble"
+          icon={Cpu}
+          color="cyan"
+          badgeText="PyTorch"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-emerald-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">False Positive Rate</div>
-          <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono">0.22%</div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">Benchmark: &lt;1.0%</div>
-        </div>
+        <StatCard
+          title="False Positive"
+          value="0.22%"
+          subtext="Benchmark: <1.0%"
+          icon={CheckCircle2}
+          color="emerald"
+        />
 
-        <div className="glass-card p-4 rounded-xl border-l-4 border-l-emerald-500">
-          <div className="text-[11px] font-mono text-slate-400 uppercase">SOC Health</div>
-          <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono">100%</div>
-          <div className="text-[10px] text-emerald-400 flex items-center mt-1 font-mono">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> All Systems Online
-          </div>
-        </div>
+        <StatCard
+          title="SOC Health"
+          value="100%"
+          subtext="All Systems Online"
+          icon={Server}
+          color="emerald"
+          badgeText="Active"
+        />
       </div>
 
-      {/* MITRE ATT&CK TACTICS SNAPSHOT */}
-      <div className="glass-card p-4 rounded-2xl border border-slate-800">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-            <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">MITRE ATT&CK Framework Live Threat TTPs</span>
-          </div>
-          <button
-            onClick={() => navigate('/findings')}
-            className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1"
-          >
-            View Active Findings <ArrowRight className="w-3 h-3" />
-          </button>
+      {/* CYBER RADAR SCANNER & MITRE ATT&CK TACTICS SNAPSHOT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Animated Cyber Radar Scanner Component */}
+        <div className="lg:col-span-1">
+          <CyberRadar />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
-          {mitreTechniques.map((ttp) => (
-            <div
-              key={ttp.code}
-              onClick={() => navigate('/findings')}
-              className="p-3 bg-[#080C14] hover:bg-[#0E1626] border border-slate-800 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer group"
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-mono font-bold text-cyan-300 group-hover:text-cyan-200">{ttp.code}</span>
-                <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
-                  ttp.severity === 'Critical' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'
-                }`}>
-                  {ttp.severity}
-                </span>
-              </div>
-              <div className="font-semibold text-slate-200 truncate">{ttp.name}</div>
-              <div className="text-[10px] text-slate-500 font-mono mt-1">{ttp.activeCount} detected vectors</div>
+
+        {/* MITRE ATT&CK TACTICS SNAPSHOT */}
+        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20 flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">MITRE ATT&CK Framework Live Threat TTPs</span>
             </div>
-          ))}
+            <button
+              onClick={() => navigate('/findings')}
+              className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold"
+            >
+              View Active Findings <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+            {mitreTechniques.map((ttp) => (
+              <motion.div
+                key={ttp.code}
+                whileHover={{ scale: 1.04, y: -2 }}
+                onClick={() => navigate('/findings')}
+                className="p-3 bg-[#060A14] hover:bg-[#0C1222] border border-slate-800 hover:border-cyan-500/40 rounded-xl transition-all cursor-pointer group"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-mono font-bold text-cyan-300 group-hover:text-cyan-200">{ttp.code}</span>
+                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
+                    ttp.severity === 'Critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                  }`}>
+                    {ttp.severity}
+                  </span>
+                </div>
+                <div className="font-semibold text-slate-200 truncate">{ttp.name}</div>
+                <div className="text-[10px] text-slate-500 font-mono mt-1">{ttp.activeCount} detected vectors</div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+            <span>Threat Taxonomy: CIC-IDS2017 Dataset Schema</span>
+            <span className="text-cyan-400 font-semibold flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-cyan-400" /> Automated SOAR Mitigation Playbooks Active
+            </span>
+          </div>
         </div>
       </div>
 
       {/* CHARTS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Threat Timeline Area Chart */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl">
+        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20">
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-sm font-bold text-white">Threat Activity Over Time (24h Timeline)</h3>
               <p className="text-[11px] text-slate-400">Comparison between benign background traffic and detected threat anomalies.</p>
             </div>
-            <span className="text-xs text-cyan-400 font-mono bg-cyan-950/60 px-2.5 py-1 border border-cyan-500/30 rounded-full">
+            <span className="text-xs text-cyan-400 font-mono bg-cyan-950/60 px-3 py-1 border border-cyan-500/30 rounded-full font-semibold">
               Live Ingestion Feed
             </span>
           </div>
@@ -241,7 +301,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Attack Category Pie Chart */}
-        <div className="glass-card p-5 rounded-2xl flex flex-col justify-between">
+        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-white">Attack Category Distribution</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Classification by dataset threat categories.</p>
@@ -277,7 +337,7 @@ export const DashboardPage: React.FC = () => {
             {(stats?.attack_category_distribution || []).slice(0, 6).map((item, idx) => (
               <div key={item.category} className="flex items-center space-x-1.5 truncate">
                 <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
-                <span className="text-slate-300 truncate">{item.category} ({item.percentage}%)</span>
+                <span className="text-slate-300 truncate font-mono">{item.category} ({item.percentage}%)</span>
               </div>
             ))}
           </div>
@@ -287,14 +347,18 @@ export const DashboardPage: React.FC = () => {
       {/* LOWER SECTION: TOP ENDPOINTS & RECENT FINDINGS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Affected Endpoints */}
-        <div className="glass-card p-5 rounded-2xl space-y-3">
+        <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-white">Top Targeted Infrastructure Assets</h3>
             <span className="text-[10px] font-mono text-cyan-400">Endpoints</span>
           </div>
           <div className="space-y-2.5 text-xs">
             {(stats?.top_affected_endpoints || []).map((ep) => (
-              <div key={ep.endpoint} className="p-3 bg-[#080C14] border border-slate-800 rounded-xl flex justify-between items-center hover:border-slate-700 transition-all">
+              <motion.div
+                key={ep.endpoint}
+                whileHover={{ x: 2 }}
+                className="p-3 bg-[#060A14] border border-slate-800 rounded-xl flex justify-between items-center hover:border-cyan-500/40 transition-all"
+              >
                 <div>
                   <div className="text-xs font-mono text-cyan-300 font-semibold">{ep.endpoint}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5">{ep.threat_count} threat vectors detected</div>
@@ -306,13 +370,13 @@ export const DashboardPage: React.FC = () => {
                 }`}>
                   {ep.severity}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
 
         {/* Recent Security Findings Table */}
-        <div className="lg:col-span-2 glass-card p-5 rounded-2xl space-y-3">
+        <div className="lg:col-span-2 glass-card p-5 rounded-2xl border border-cyan-500/20 space-y-3">
           <div className="flex justify-between items-center mb-1">
             <div>
               <h3 className="text-sm font-bold text-white">Recent Security Intelligence Findings</h3>
@@ -320,7 +384,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => navigate('/findings')}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1"
+              className="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold"
             >
               All Findings <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -342,7 +406,7 @@ export const DashboardPage: React.FC = () => {
                   <tr
                     key={finding.id}
                     onClick={() => navigate('/findings')}
-                    className="hover:bg-slate-800/40 transition-all cursor-pointer"
+                    className="hover:bg-cyan-500/10 transition-all cursor-pointer"
                   >
                     <td className="py-3">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border font-mono ${
