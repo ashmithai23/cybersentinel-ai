@@ -2,7 +2,7 @@ import pandas as pd
 from ml.predict import CyberSentinelInferenceEngine
 
 engine = CyberSentinelInferenceEngine()
-df = pd.read_csv(r"C:\Users\Ashmith\Downloads\cybersecurity_threat_detection_logs.csv")
+df = pd.read_csv("data/cicids_threat_dataset.csv")
 print("Input CSV shape:", df.shape)
 
 results = engine.predict_batch(df.head(10))
