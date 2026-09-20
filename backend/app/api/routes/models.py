@@ -42,7 +42,9 @@ async def get_model_comparison(
         inf_time = m_metrics.get("inference_time_ms", 5.2)
         
         table_rows.append({
+            "id": db_m.id,
             "model": db_m.model_name,
+            "name": db_m.model_name,
             "type": db_m.model_type,
             "accuracy": db_m.accuracy,
             "precision": db_m.precision,
@@ -50,7 +52,9 @@ async def get_model_comparison(
             "f1_score": db_m.f1_score,
             "roc_auc": db_m.roc_auc,
             "inference_time_ms": inf_time,
-            "status": db_m.status
+            "latency_ms": inf_time,
+            "status": db_m.status,
+            "is_active": db_m.status == "Production"
         })
 
     return ModelComparisonOut(
