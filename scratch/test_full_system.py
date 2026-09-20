@@ -1,7 +1,9 @@
+import pytest
 import asyncio
 from httpx import AsyncClient, ASGITransport
 from backend.app.main import app
 
+@pytest.mark.asyncio
 async def test_all_routes():
     print("Beginning Comprehensive End-to-End System Audit...")
     transport = ASGITransport(app=app)
