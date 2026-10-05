@@ -59,7 +59,7 @@ export const SecurityEventsPage: React.FC = () => {
     if (!isStreaming) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:8000/api/v1/ws/live-events`;
+    const wsUrl = `${protocol}//${window.location.host}/api/v1/ws/live-events`;
     let socket: WebSocket | null = null;
 
     try {
@@ -160,7 +160,7 @@ export const SecurityEventsPage: React.FC = () => {
         <StatCard
           title="Stream Status"
           value={isStreaming ? 'CONNECTED' : 'PAUSED'}
-          subtext="Port 8000 WebSocket"
+          subtext="Live WebSocket Stream"
           icon={CheckCircle2}
           color={isStreaming ? 'emerald' : 'amber'}
         />
